@@ -1,0 +1,109 @@
+---
+title: MDS by Majorizing Gauss-Newton
+author: 
+    - name: Jan de Leeuw
+      orcid: 0000-0003-1420-1797
+      email: jan@deleeuwpdx.net
+      affiliation: 
+        - name: University of California Los Angeles
+          city: Los Angeles
+          state: CA
+          url: www.ucla.edu
+      license: "CC0"
+date: last-modified
+date-format: long
+bibliography: [mypubs.bib, total.bib]
+number-sections: true
+pdf-engine: lualatex
+keep-tex: true
+format:
+   pdf:
+    fontsize: 12pt
+    include-in-header: 
+     - preamble.tex
+    keep-tex: true
+    link-citations: true
+    documentclass: scrartcl
+    number-sections: true
+   html:
+    fontsize: 12pt
+    include-in-header: 
+     - preamble.css
+    keep-md: true
+    number-sections: true
+toc: true
+toc-depth: 3
+editor: source
+papersize: letter
+graphics: true
+link-citations: true
+mainfont: Times New Roman
+abstract: TBD
+---
+
+```{r loadpackages, echo = FALSE}
+suppressPackageStartupMessages(library(knitr, quietly = TRUE))
+suppressPackageStartupMessages(library(tinytex, quietly = TRUE))
+```
+
+\sectionbreak 
+
+**Note:** This is a working manuscript which will be expanded/updated
+frequently. All suggestions for improvement are welcome. All Rmd, tex,
+html, pdf, R, and C files are in the public domain. Attribution will be
+appreciated, but is not required. The files can be found at
+<https://github.com/deleeuw> 
+
+\sectionbreak
+
+# Loss
+
+rStress with $r>0$ is defined as
+$$
+\sigma_r(x):=\sum_k w_k(\delta_k^r-d_k^r(x))^2
+$$
+
+#  First-order Taylor approximation to powered distances
+
+$$
+d_k^r(x)\approx d_k^r(y)+rd_k^{r-1}(y)(d_k(x)-d_k(y))
+$$
+Note that if $r=1$ both sides are equal to $d_k(x)$. If $r=2$
+$$
+d_k^2(x)\approx d_k^2(y)+2d_k(y)(d_k(x)-d_k(y))=2d_k(x)d_k(y)-d_k^2(y).
+$$
+
+# Gauss-Newton approximation to rStress
+
+\begin{align}
+\sigma_r(x)\approx&\sum_k w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
+&\sum_k w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
+\end{align}
+Let
+$$
+\tilde w_k(y):=r^2w_kd_k^{2(r-1)}(y)
+$$
+and
+$$
+\tilde\delta_k(y):=\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}+d_k(y)=\frac{\delta_k^r+(r-1)d_k^r(y)}{rd_k^{r-1}(y)}
+$$
+then
+$$
+\sigma_r(x;y)\approx\sum_k\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
+$$
+which can be minimized by majorization. Also if $x=y$ then $\sigma_r(x;x)=\sigma_r(x)$.
+
+For $r\geq 1$ we have $\delta_k(y)\geq 0$. 
+
+For $r=1$ we have $\tilde w_k(y)=w_k$ and $\tilde\delta_k(y)=\delta_k$. This is
+regular smacof.
+
+For $r=2$ we have $\tilde w_k(y)=4w_kd_k^2(y)$ and $\tilde\delta_k(y)=\frac{\delta_k^2+d_k^2(y)}{2d_k(y)}$.
+
+# Algorithm
+
+$$
+\sigma_r(x^+)\approx\sigma_r(x^+;x)\leq\sigma_r(x;x)=\sigma_r(x)
+$$
+
+
