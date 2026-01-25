@@ -106,4 +106,26 @@ $$
 \sigma_r(x^+)\approx\sigma_r(x^+;x)\leq\sigma_r(x;x)=\sigma_r(x)
 $$
 
+# fStress
 
+$$
+\sigma_f(x)=\sum_k w_k(f(\delta_k)-f(d_k(x))^2
+$$
+$$
+f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y))
+$$
+$$
+\tilde w_k(y)=w_k\{\mathcal{D}f(d_k(y))\}^2
+$$
+$$
+\tilde\delta_k(y)=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y)
+$$
+The Gauss-Newton approximation will be good if $f(\delta_k)\approx f(d_k(y))$, which will
+tend to be true for smooth monotone $f$ (or for Lipschitz $f$) if  $\delta_k\approx d_k(y)$. This suggests starting with some regular smacof iterations (although Torgerson may be good enough).
+
+# Negative $\tilde\delta_k$
+
+If some of the $\tilde\delta_k$ are negative we may usae the AM/GM inequality
+for majorization as in @heiser_91.
+
+# References

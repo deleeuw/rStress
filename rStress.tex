@@ -95,6 +95,39 @@
 \makeatother
 
 
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -275,6 +308,41 @@ For \(r=2\) we have \(\tilde w_k(y)=4w_kd_k^2(y)\) and
 \[
 \sigma_r(x^+)\approx\sigma_r(x^+;x)\leq\sigma_r(x;x)=\sigma_r(x)
 \]
+
+\section{fStress}\label{fstress}
+
+\[
+\sigma_f(x)=\sum_k w_k(f(\delta_k)-f(d_k(x))^2
+\] \[
+f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y))
+\] \[
+\tilde w_k(y)=w_k\{\mathcal{D}f(d_k(y))\}^2
+\] \[
+\tilde\delta_k(y)=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y)
+\] The Gauss-Newton approximation will be good if
+\(f(\delta_k)\approx f(d_k(y))\), which will tend to be true for smooth
+monotone \(f\) (or for Lipschitz \(f\)) if \(\delta_k\approx d_k(y)\).
+This suggests starting with some regular smacof iterations (although
+Torgerson may be good enough).
+
+\section{\texorpdfstring{Negative
+\(\tilde\delta_k\)}{Negative \textbackslash tilde\textbackslash delta\_k}}\label{negative-tildedelta_k}
+
+If some of the \(\tilde\delta_k\) are negative we may usae the AM/GM
+inequality for majorization as in Heiser
+(\citeproc{ref-heiser_91}{1991}).
+
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-heiser_91}
+Heiser, W. J. 1991. {``{A Generalized Majorization Method for Least
+Squares Multidimensional Scaling of Pseudodistances that May Be
+Negative}.''} \emph{Psychometrika} 56 (1): 7--27.
+
+\end{CSLReferences}
 
 
 
