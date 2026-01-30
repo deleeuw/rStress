@@ -3,8 +3,10 @@ source("smacofDataUtilities.R")
 
 data(ekman, package = "smacof")
 ekmanLabels <- as.character(attr(ekman, "Labels"))
-ekman <- as.matrix(1 - ekman)
-ikman <- ekman^2
+ekmanDist <- 1 - ekman
+ekmanMatrix <- as.matrix(ekmanDist)
+ekmanData <- makeMDSData(ekmanDist)
+ikman <- ekmanMatrix^2
 rkman <- apply(ikman, 1, mean)
 mkman <- mean(ikman)
 ckman <- -(ikman - outer(rkman, rkman, "+") + mkman) / 2

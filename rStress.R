@@ -1,34 +1,37 @@
 rStress <- function(delta,
-                    xini,
-                    wght = 1 - diag(nrow(xini)),
-                    r = 2,
+                    xinit,
+                    wght = 1 - diag(nrow(xinit)),
+                    rpow = 1,
+                    dpow = FALSE,
                     itmax = 10000,
                     eps = 1e-6,
                     verbose = TRUE) {
   itel <- 1
-  nobj <- nrow(xini)
+  nobj <- nrow(xinit)
   mobj <- 1 / nobj
-  dpow <- delta^r
-  dini <- as.matrix(dist(xini))
-  eold <- dini^r
-  labd <- (sum(wght * dpow * eold) / sum(wght * (eold^2)))^(1 / r)
-  xold <- labd * xini
+  if (dpow) {
+    dhat <- delta^rpow
+  } else {
+    dhat <- delta
+  }
+  xold <- xinit
   dold <- as.matrix(dist(xold))
-  sold <- sum(wght * (dpow - (dold^r))^2)
+  sold <- sum(wght * (dhat - (dold^rpow))^2) / 2
   repeat {
-    wmat <- (r^2) * wght * ((dold + diag(nobj))^(2 * (r - 1)))
-    dmat <- (dpow + (r - 1) * (dold^r)) / (r * (dold + diag(nobj))^(r - 1))
-    sgno <- sum(wmat * (dmat - dold)^2) # always sgno = sold
-    vmat <- -wmat
+    wmat <- (rpow^2) * wght * ((dold + diag(nobj))^(2 * (rpow - 1)))
+    dmat <- (dhat + (rpow - 1) * (dold^rpow)) / (rpow * (dold + diag(nobj))^(rpow - 1))
+    hmat <- 0.5 * (dmat < 0) * (1 / (dold + diag(nobj)))
+    sgno <- sum(wmat * (dmat - dold)^2) / 2 # always sgno = sold
+    vmat <- -(wmat + hmat)
     diag(vmat) <- -rowSums(vmat)
     vinv <- solve(vmat + mobj) - mobj
-    bmat <- -wmat * dmat / (dold + diag(nobj))
+    bmat <- -(dmat > 0)  * wmat * dmat / (dold + diag(nobj))
     diag(bmat) <- -rowSums(bmat)
     xnew <- vinv %*% bmat %*% xold
-    apse <- max(abs(xold - xnew))
     dnew <- as.matrix(dist(xnew))
-    sgnn <- sum(wmat * (dmat - dnew)^2) # always sgnn < sgno = sold
-    snew <- sum(wght * (dpow - (dnew^r))^2)
+    apse <- max(abs(dold - dnew))
+    sgnn <- sum(wmat * (dmat - dnew)^2) / 2 # always sgnn < sgno = sold
+    snew <- sum(wght * (dhat - (dnew^rpow))^2) / 2
     if (verbose) {
       cat(
         " itel",

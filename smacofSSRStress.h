@@ -1,5 +1,5 @@
-#ifndef SMACOF_SS_SAMELAS_H
-#define SMACOF_SS_SAMELAS_H
+#ifndef SMACOF_SS_RSTRESS_H
+#define SMACOF_SS_RSTRESS_H
 
 #include <limits.h>
 #include <math.h>
@@ -10,7 +10,7 @@
 
 #define SQUARE(x) ((x) * (x))
 #define CUBE(x) ((x) * (x) * (x))
-#define EPS 1e-15
+#define EPS 1e-6
 #define true 1
 #define false 0
 
@@ -28,37 +28,21 @@ void mySort(double *, double *, double *, int *, int *, const int *);
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv);
 
-double smacofSSSammonLoss(int *ndat, double* edit, double *dhat, double *wght);
+double smacofSSRStressLoss(int* ndat, double* edis, double* dhat,
+                           double* wght, double *rpow);
 
-void smacofSSSammonEngine(int* nobj, int* ndim, int* ndat, int* itel,
+void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, int* weighted,
-                           double* sold, double *snew, double* eps, int* iind,
-                           int* jind, int* blks, double* wght, double* edis,
-                           double* dhat, double* xold, double* xnew);
+                           double* sold, double* snew, double* eps, double *rpow,
+                           int* iind, int* jind, int* blks, double* wght, 
+                           double* edis, double* dhat, double* xold, double* xnew);
 
-void smacofSSSammonMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
+void smacofSSRStressMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
                       int* jind, int* weighted, double* wght, double* vinv, double* edis,
                       double* dhat, double* xold, double* xnew);
 
-void smacofSSSammonMonotone(int* ndat, int* ties, double* snew,
-                       int* iind, int* jind, int* blks, double* edis,
-                       double* dhat, double* wght);
-
-double smacofSSElasticLoss(int *ndat, double* edit, double *dhat, double *wght);
-
-void smacofSSElasticEngine(int* nobj, int* ndim, int* ndat, int* itel,
-                           int* ties, int* itmax, int* digits, int* width,
-                           int* verbose, int* ordinal, int* weighted,
-                           double* sold, double *snew, double* eps, int* iind,
-                           int* jind, int* blks, double* wght, double* edis,
-                           double* dhat, double* xold, double* xnew);
-
-void smacofSSElasticMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
-                      int* jind, int* weighted, double* wght, double* vinv, double* edis,
-                      double* dhat, double* xold, double* xnew);
-
-void smacofSSElasticMonotone(int* ndat, int* ties, double* snew,
+void smacofSSRStressMonotone(int* ndat, int* ties, double* snew,
                        int* iind, int* jind, int* blks, double* edis,
                        double* dhat, double* wght);
 
@@ -79,6 +63,8 @@ void smacofSSMajorize(const int* nobj, const int* ndim, const int* ndat,
 
 void smacofSSMonotone(const int* ndat, const int* ties, int* iind, int* jind,
                       int* blks, double* edis, double* dhat, double* wght);
+
+void smacofSSSMatrixPrint(double *mat, int *nobj, int *ndat, int *iind, int *jind, int *width, int *digits);
 
 
 static inline void *xmalloc(const size_t size) {
@@ -120,4 +106,4 @@ static inline void *xrealloc(void *ptr, const size_t size) {
     }                                                                          \
   }
 
-#endif /* SMACOF_SS_SAMELAS_H */
+#endif /* SMACOF_SS_RSTRESS_H */

@@ -228,7 +228,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={MDS by Majorizing Gauss-Newton},
+  pdftitle={Minimizing fStress and rStress by Majorizing Gauss-Newton},
   pdfauthor={Jan de Leeuw},
   colorlinks=true,
   linkcolor={blue},
@@ -238,9 +238,9 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{MDS by Majorizing Gauss-Newton}
+\title{Minimizing fStress and rStress by Majorizing Gauss-Newton}
 \author{Jan de Leeuw}
-\date{January 24, 2026}
+\date{January 29, 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -260,40 +260,192 @@ TBD
 expanded/updated frequently. All suggestions for improvement are
 welcome. All Rmd, tex, html, pdf, R, and C files are in the public
 domain. Attribution will be appreciated, but is not required. The files
-can be found at \url{https://github.com/deleeuw}
+can be found at \url{https://github.com/deleeuw/rStress}
 
 \sectionbreak
 
-\section{Loss}\label{loss}
+\section{Loss Functions}\label{loss-functions}
 
-rStress with \(r>0\) is defined as \[
-\sigma_r(x):=\sum_k w_k(\delta_k^r-d_k^r(x))^2
-\]
+The Multidimensional Scaling (MDS) loss function fStress (Groenen, De
+Leeuw, and Mathar (\citeproc{ref-groenen_deleeuw_mathar_C_95}{1995}), De
+Leeuw (\citeproc{ref-deleeuw_E_17r}{2017})) is defined as
+\begin{equation}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
+\end{equation} with \(f\) increasing and differentiable in the open
+interval \((0,+\infty)\). In \eqref{eq-fdef} the \(w_k\) are positive
+\emph{weights}, the \(\delta_k\) are known \emph{dissimilarities}. The
+vector \(x\) has the coordinates of an number of points in
+\(\mathbb{R}^p\), and the \(d_k\) are Euclidean \emph{distances} between
+pairs of these points. Metric least squares MDS minimizes fStress over
+\(x\).
 
-\section{First-order Taylor approximation to powered
-distances}\label{first-order-taylor-approximation-to-powered-distances}
+fStress was introduced and studied in Groenen, De Leeuw, and Mathar
+(\citeproc{ref-groenen_deleeuw_mathar_C_95}{1995}). No explicit
+algorithm to minimize it was given, but the paper has formulas for the
+first and second derivatives. De Leeuw
+(\citeproc{ref-deleeuw_E_17r}{2017}) uses the multivariate Faà di Bruno
+formula to derive derivatives up to order four. These derivatives can be
+used in general purpose minimization methods.
 
-\[
-d_k^r(x)\approx d_k^r(y)+rd_k^{r-1}(y)(d_k(x)-d_k(y))
-\] Note that if \(r=1\) both sides are equal to \(d_k(x)\). If \(r=2\)
-\[
-d_k^2(x)\approx d_k^2(y)+2d_k(y)(d_k(x)-d_k(y))=2d_k(x)d_k(y)-d_k^2(y).
+An important special case of fStress is rStress (also known as
+powerStress), which is \begin{equation}
+\sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2\label{eq-rdef}
+\end{equation} Special cases of rStress are Kruskal's stress (Kruskal
+(\citeproc{ref-kruskal_64a}{1964a}), Kruskal
+(\citeproc{ref-kruskal_64b}{1964b})) with \(r=1\), sstress by Takane,
+Young, and De Leeuw (\citeproc{ref-takane_young_deleeuw_A_77}{1977})
+with \(r=2\), and logarithmic stress with \(r\rightarrow 0\) by Ramsay
+(\citeproc{ref-ramsay_77}{1977}). There have been various attempts to
+extend the majorization (or MM) method for MDS (De Leeuw
+(\citeproc{ref-deleeuw_C_77}{1977})) to rStress. References and links to
+various unpublished reports are in De Leeuw
+(\citeproc{ref-deleeuw_E_17r}{2017}). The recent smacofx package (Rusch
+et al. (\citeproc{ref-rusch_deleeuw_mair_hornik_25}{In Press})) has R
+code for the rstressMin() function that implements one of these
+techniques.
+
+Minimizing of either fStress or rStress over \(x\) is a metric MDS
+problem. The \(\delta_k\), and consequently the \(f(\delta_k)\), are
+\(K\) known numbers. In non-metric MDS the loss functions are minimized
+over both \(x\) and \(\delta\), where \(\delta\) is constrained to be in
+a set \(\Delta\subseteq\mathbb{R}^K\). For the ordinal version of
+non-metric MDS, for example, we require
+\(\delta_1\leq\cdots\leq\delta_K\). Since \(f\) is increasing, we can
+write fStress simply as \begin{equation}
+\sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-nmfdef}
+\end{equation} where \(\delta\) is no longer a vector of known
+dissimilarities, but any vector monotone with the dissimilarities. These
+transformed or scaled dissimilarities are often called
+\emph{disparities}. Non-metric rStress is simply \eqref{eq-nmfdef} with
+\(\smash{f(d_k(x))=d_k^r(x)}\).
+
+In order to exclude the trivial solution with \(x=0\) and \(\delta=0\)
+in addition we impose the normalization constraint \begin{equation}
+\eta^2(\delta):=\frac12\sum_{k=1}^Kw_k\delta_k^2=1.\label{eq-normal}
+\end{equation} This formulation of non-metric MDS can be generalized to
+\(\delta\in\Delta\), where \(\Delta\) is a convex cone in
+\(\mathbb{R}^K\). This means we require the disparities to be in the
+intersection of the cone \(\Delta\) and the sphere \(\Sigma\) defined by
+\eqref{eq-normal}.
+
+\section{Alternating Least Squares}\label{alternating-least-squares}
+
+The technique proposed in this paper to minimize non-metric fStress or
+rStress is in the Alternating Least Squares (ALS) class. We start with
+an initial estimate of \(x\). We then minimize \(\sigma_f\) over
+\(\delta\) in \(\Delta\cap\Sigma\) for the current \(d(x)\). The
+minimizing \(\delta\) is then used to minimize fStress over \(x\) for
+the current disparities. These two steps are alternated until \(x\) and
+\(\delta\) do not change any more. Starting in iteration \(\nu=0\) we
+compute \begin{subequations}
+\begin{align}
+\delta^{(\nu)}&=\mathop{\text{argmin}}_{\delta\in\Delta\cap\Sigma}\sigma_f(x^{(\nu)},\delta),\label{eq-als1}\\
+x^{(\nu+1)}&=\mathop{\text{argmin}}_x\sigma_f(x,\delta^{(\nu)})\label{eq-als2}.
+\end{align}
+\end{subequations} We then increase \(\nu\) by one and go into the next
+iteration. And so on, until convergence.
+
+\subsection{Normalized Cone
+Regression}\label{normalized-cone-regression}
+
+The step \eqref{eq-als1} is comparatively easy. We compute the least
+squares projection of \(f(d(x))\) on the cone \(\Delta\) and then
+normalize this projection to give it length one. If \(\Delta\) is the
+cone of monotone vectors, as in ordinal MDS, the cone projection is
+\emph{monotone regression}. The fact that projection on the intersection
+of \(\Delta\) and \(\Sigma\) is equivalent to normalizing the projection
+of \(\Delta\) is due to De Leeuw (\citeproc{ref-deleeuw_U_75a}{1975})
+and more generally (and more rigorously) to Bauschke, Bui, and Wang
+(\citeproc{ref-bauschke_bui_wang_18}{2018}). Since this step is the same
+as in the standard MDS algorithms such as smacof (De Leeuw and Mair
+(\citeproc{ref-deleeuw_mair_A_09c}{2009}), Mair, Groenen, and De Leeuw
+(\citeproc{ref-mair_groenen_deleeuw_A_22}{2022})) we do not go into
+details here, and just refer to the literature.
+
+\subsection{Majorization}\label{majorization}
+
+The second step, minimizing over \(x\) for fixed current \(\delta\), is
+much more complicated. There is no analytic solution, as in the first
+step, and minimization requires an iterative process of its own. Thus
+the second step requires an infinite number of ``inner'' iterations. As
+a compromise, we deviate from the strict ALS framework by not minimizing
+fStress over \(x\) for fixed \(\delta\), but by merely taking a single
+one of the ``inner'' iterations and merely decrease fStress. If this is
+done judiciously we still obtain a convergent sequence of updates. This
+is also what is done in other MDS algorithms such as smacof (De Leeuw
+(\citeproc{ref-deleeuw_C_77}{1977})) and alscal (Takane, Young, and De
+Leeuw (\citeproc{ref-takane_young_deleeuw_A_77}{1977})).
+
+In smacof the inner iteration step is a majorization step, by now more
+commonly known as an MM step. Briefly, we find a function
+\(\kappa_f(x;y)\) such that
+
+\begin{itemize}
+\tightlist
+\item
+  \(\kappa_f(x,y)\leq\sigma_f(x)\) for all \(x\) and \(y\) in \(\Xi\),
+  and
+\item
+  \(\kappa_f(y;y)=\sigma_f(y)\) for all \(y\) in \(\Xi\).
+\end{itemize}
+
+An inner iteration is of the form \begin{equation}
+x^{(\mu+1)}=\mathop{\text{argmin}}_{x\in\Xi}\kappa(x,x^{(\mu)})\label{eq-inner}
+\end{equation} Remember that this inner iterative process goes on within
+step 2 of each ALS update. Now, from \eqref{eq-inner}, \begin{equation}
+\sigma_f(x^{(\mu+1)})\leq\kappa_f(x^{(\mu+1)},x^{(\mu)})\leq\kappa_f(x^{(\mu)},x^{(\mu)})=
+\sigma_f(x^{(\mu)}).\eqref{eq-sandwich}
+\end{equation} \$\$
+
+We can approximate \(f(d(x))\) near \(d(y)\) with \begin{equation}
+f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)).\label{eq-taylor}
+\end{equation} Define \begin{equation}
+\eta_f(x;y):=\sum_{k=1}^K w_k(\delta_k-f(d_k(y))-\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)))^2.\label{eq-defeta}
+\end{equation}
+
+Note that \(\eta_f(x;x)=\sigma_f(x)\) for all \(x\) and if \(f\) is the
+identity then \(\eta_f(x;y)=\sigma_f(x)\) for all \(x\) and \(y\).
+Define \begin{subequations}
+\begin{align}
+\tilde w_k(y)&:=w_k\{\mathcal{D}f(d_k(y))\}^2,\\
+\tilde\delta_k(y)&:=\frac{\delta_k-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y).
+\end{align}
+\end{subequations} Then \[
+\eta_f(x;y)=\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
+\] Now majorize. \[
+\eta_f(x;y)=C+\sum_{k=1}^K\tilde w_k(y)d_k^2(x)-2\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)
+\] Now if \(\delta_k(y)>0\) we use \[
+d_k(x)\geq\frac{1}{d_k(y)}\text{tr}\ X'A_kY
+\] and if \(\delta_k(y)<0\) we use \[
+d_k(x)\leq\frac12\frac{1}{d_k(y)}\{d_k^2(y)+d_k^2(x)\}
+\] Thus \[
+\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)\geq\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_ky+\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_kx+C
+\] \[
+V:=\sum_{k=1}^K \tilde w_kA_k,\\
+B(y):=\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}A_k,\\
+H(y):=\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}A_k.
+\] \[
+\sigma_f(x)\leq C -2x'B(y)y+x'(V+H(y))x
+\] \[
+\sigma_f(x^+)\approx\eta_f(x^+;x)\leq\eta_f(x,x)=\sigma_f(x).
 \]
 
 \section{Gauss-Newton approximation to
 rStress}\label{gauss-newton-approximation-to-rstress}
 
 \begin{align}
-\sigma_r(x)\approx&\sum_k w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
-&\sum_k w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
+\sigma_r(x)\approx&\sum_{k=1}^K w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
+&\sum_{k=1}^K w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
 \end{align} Let \[
 \tilde w_k(y):=r^2w_kd_k^{2(r-1)}(y)
 \] and \[
 \tilde\delta_k(y):=\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}+d_k(y)=\frac{\delta_k^r+(r-1)d_k^r(y)}{rd_k^{r-1}(y)}
 \] then \[
-\sigma_r(x;y)\approx\sum_k\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
+\sigma_r(x;y)\approx\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
 \] which can be minimized by majorization. Also if \(x=y\) then
 \(\sigma_r(x;x)=\sigma_r(x)\).
+
+\section{rStress}\label{rstress}
 
 For \(r\geq 1\) we have \(\delta_k(y)\geq 0\).
 
@@ -303,44 +455,98 @@ For \(r=1\) we have \(\tilde w_k(y)=w_k\) and
 For \(r=2\) we have \(\tilde w_k(y)=4w_kd_k^2(y)\) and
 \(\tilde\delta_k(y)=\frac{\delta_k^2+d_k^2(y)}{2d_k(y)}\).
 
-\section{Algorithm}\label{algorithm}
-
-\[
-\sigma_r(x^+)\approx\sigma_r(x^+;x)\leq\sigma_r(x;x)=\sigma_r(x)
-\]
-
-\section{fStress}\label{fstress}
-
-\[
-\sigma_f(x)=\sum_k w_k(f(\delta_k)-f(d_k(x))^2
-\] \[
-f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y))
-\] \[
-\tilde w_k(y)=w_k\{\mathcal{D}f(d_k(y))\}^2
-\] \[
-\tilde\delta_k(y)=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y)
-\] The Gauss-Newton approximation will be good if
-\(f(\delta_k)\approx f(d_k(y))\), which will tend to be true for smooth
-monotone \(f\) (or for Lipschitz \(f\)) if \(\delta_k\approx d_k(y)\).
-This suggests starting with some regular smacof iterations (although
-Torgerson may be good enough).
-
 \section{\texorpdfstring{Negative
 \(\tilde\delta_k\)}{Negative \textbackslash tilde\textbackslash delta\_k}}\label{negative-tildedelta_k}
 
-If some of the \(\tilde\delta_k\) are negative we may usae the AM/GM
+If some of the \(\tilde\delta_k\) are negative we may use the AM/GM
 inequality for majorization as in Heiser
-(\citeproc{ref-heiser_91}{1991}).
+(\citeproc{ref-heiser_91}{1991}). For now the program gives an error.
+
+\section{Nonmetric}\label{nonmetric}
+
+In the metric case we have to decide if we want to fit \(d^r\) to
+\(\delta\) or to \(\delta^r\). This can be handled in the R driver. In
+the non-metric case it does not make a difference which of the two we
+choose. \[
+\sigma(x,\hat d)=
+\]
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-bauschke_bui_wang_18}
+Bauschke, Heinz H., Minh N. Bui, and Xianfu Wang. 2018. {``{Projecting
+onto the Intersection of a Cone and a Sphere}.''} \emph{SIAM Journal on
+Optimization} 28: 2158--88.
+
+\bibitem[\citeproctext]{ref-deleeuw_U_75a}
+De Leeuw, Jan. 1975. {``{A Normalized Cone Regression Approach to
+Alternating Least Squares Algorithms}.''} Department of Data Theory
+FSW/RUL.
+\url{https://jansweb.netlify.app/publication/deleeuw-u-75-a/deleeuw-u-75-a.pdf}.
+
+\bibitem[\citeproctext]{ref-deleeuw_C_77}
+---------. 1977. {``Applications of Convex Analysis to Multidimensional
+Scaling.''} In \emph{Recent Developments in Statistics}, edited by J. R.
+Barra, F. Brodeau, G. Romier, and B. Van Cutsem, 133--45. Amsterdam, The
+Netherlands: North Holland Publishing Company.
+
+\bibitem[\citeproctext]{ref-deleeuw_E_17r}
+---------. 2017. {``{Higher Partials of fStress. Who Needs Them ?}''}
+2017.
+\url{https://jansweb.netlify.app/publication/deleeuw-e-17-r/deleeuw-e-17-r.pdf}.
+
+\bibitem[\citeproctext]{ref-deleeuw_mair_A_09c}
+De Leeuw, Jan, and Patrick Mair. 2009. {``{Multidimensional Scaling
+Using Majorization: SMACOF in R}.''} \emph{Journal of Statistical
+Software} 31 (3): 1--30.
+\url{https://www.jstatsoft.org/article/view/v031i03}.
+
+\bibitem[\citeproctext]{ref-groenen_deleeuw_mathar_C_95}
+Groenen, Patrick J. F., Jan De Leeuw, and Rudolf Mathar. 1995. {``{Least
+Squares Multidimensional Scaling with Transformed Distances}.''} In
+\emph{{From Data to Knowledge: Theoretical and Practical Aspects of
+Classification, Data Analysis and Knowledge Organization}}, edited by W.
+Gaul and D. Pfeifer. Berlin, Germany: Springer Verlag.
+\url{https://jansweb.netlify.app/publication/groenen-deleeuw-mathar-c-95/groenen-deleeuw-mathar-c-95.pdf}.
+
 \bibitem[\citeproctext]{ref-heiser_91}
 Heiser, W. J. 1991. {``{A Generalized Majorization Method for Least
 Squares Multidimensional Scaling of Pseudodistances that May Be
 Negative}.''} \emph{Psychometrika} 56 (1): 7--27.
+
+\bibitem[\citeproctext]{ref-kruskal_64a}
+Kruskal, Joseph B. 1964a. {``{Multidimensional Scaling by Optimizing
+Goodness of Fit to a Nonmetric Hypothesis}.''} \emph{Psychometrika} 29:
+1--27.
+
+\bibitem[\citeproctext]{ref-kruskal_64b}
+---------. 1964b. {``{Nonmetric Multidimensional Scaling: a Numerical
+Method}.''} \emph{Psychometrika} 29: 115--29.
+
+\bibitem[\citeproctext]{ref-mair_groenen_deleeuw_A_22}
+Mair, Patrick, Patrick J. F. Groenen, and Jan De Leeuw. 2022. {``{More
+on Multidimensional Scaling in R: smacof Version 2}.''} \emph{Journal of
+Statistical Software} 102 (10): 1--47.
+\url{https://www.jstatsoft.org/article/view/v102i10}.
+
+\bibitem[\citeproctext]{ref-ramsay_77}
+Ramsay, James O. 1977. {``{Maximum Likelihood Estimation in
+Multidimensional Scaling}.''} \emph{Psychometrika} 42: 241--66.
+
+\bibitem[\citeproctext]{ref-rusch_deleeuw_mair_hornik_25}
+Rusch, Thomas, Jan De Leeuw, Patrick Mair, and Kurt Hornik. In Press.
+{``Flexible Multidimensional Scaling with the r Package Smacofx.''}
+\emph{Journal of Statistical Software}, In Press.
+\url{https://jansweb.netlify.app/publication/rusch-deleeuw-mair-hornik-a-25/rusch-deleeuw-mair-hornik-a-25.pdf}.
+
+\bibitem[\citeproctext]{ref-takane_young_deleeuw_A_77}
+Takane, Yoshio, Forrest W. Young, and Jan De Leeuw. 1977. {``Nonmetric
+Individual Differences in Multidimensional Scaling: An Alternating Least
+Squares Method with Optimal Scaling Features.''} \emph{Psychometrika}
+42: 7--67.
 
 \end{CSLReferences}
 

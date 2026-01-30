@@ -1,5 +1,5 @@
 ---
-title: MDS by Majorizing Gauss-Newton
+title: Minimizing fStress and rStress by Majorizing Gauss-Newton
 author: 
     - name: Jan de Leeuw
       orcid: 0000-0003-1420-1797
@@ -52,32 +52,176 @@ suppressPackageStartupMessages(library(tinytex, quietly = TRUE))
 frequently. All suggestions for improvement are welcome. All Rmd, tex,
 html, pdf, R, and C files are in the public domain. Attribution will be
 appreciated, but is not required. The files can be found at
-<https://github.com/deleeuw> 
+<https://github.com/deleeuw/rStress> 
 
 \sectionbreak
 
-# Loss
+# Loss Functions
 
-rStress with $r>0$ is defined as
-$$
-\sigma_r(x):=\sum_k w_k(\delta_k^r-d_k^r(x))^2
+The Multidimensional Scaling (MDS) loss function fStress (@groenen_deleeuw_mathar_C_95, @deleeuw_E_17r) is defined as
+\begin{equation}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
+\end{equation}
+with $f$ increasing and differentiable in the open interval $(0,+\infty)$. 
+In \eqref{eq-fdef} the $w_k$ are positive *weights*, the $\delta_k$ are 
+known *dissimilarities*. The vector $x$ has the coordinates of an number
+of points in $\mathbb{R}^p$, and the $d_k$ are Euclidean *distances* between pairs 
+of these points. Metric least squares MDS minimizes fStress over $x$.
+
+fStress was introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
+algorithm to minimize it was given, but the paper has formulas for the first 
+and second derivatives. @deleeuw_E_17r uses the multivariate Faà di Bruno 
+formula to derive derivatives up to order four. These derivatives can 
+be used in general purpose minimization methods.
+
+
+An important special case of fStress is rStress (also known as powerStress), which is
+\begin{equation}
+\sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2\label{eq-rdef}
+\end{equation}
+Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and logarithmic stress with $r\rightarrow 0$ by @ramsay_77. 
+There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements one of these techniques.
+
+Minimizing of either fStress or rStress over $x$ is a metric MDS problem. The
+$\delta_k$, and consequently the $f(\delta_k)$, are $K$ known numbers. In non-metric
+MDS the loss functions are minimized over both $x$ and $\delta$, where $\delta$
+is constrained to be in a set $\Delta\subseteq\mathbb{R}^K$. For the ordinal 
+version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$. 
+Since $f$ is increasing, we can write fStress simply as
+\begin{equation}
+\sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-nmfdef}
+\end{equation}
+where $\delta$ is no longer a vector of known dissimilarities, but any vector
+monotone with the dissimilarities. These transformed or scaled dissimilarities
+are often called *disparities*. Non-metric rStress is simply \eqref{eq-nmfdef}
+with $\smash{f(d_k(x))=d_k^r(x)}$.
+
+In order to exclude the trivial solution
+with $x=0$ and $\delta=0$ in addition we impose the normalization constraint
+\begin{equation}
+\eta^2(\delta):=\frac12\sum_{k=1}^Kw_k\delta_k^2=1.\label{eq-normal}
+\end{equation}
+This formulation of non-metric MDS can be generalized to $\delta\in\Delta$,
+where $\Delta$ is a convex cone in $\mathbb{R}^K$. This means we require
+the disparities to be in the intersection of the cone $\Delta$ and the sphere $\Sigma$ defined
+by \eqref{eq-normal}.
+
+
+# Alternating Least Squares
+
+The technique proposed in this paper to minimize non-metric fStress or rStress
+is in the Alternating Least Squares (ALS) class. We start with an initial estimate
+of $x$. We then minimize $\sigma_f$ over $\delta$ in $\Delta\cap\Sigma$ for 
+the current $d(x)$. The minimizing $\delta$ is then used to minimize
+fStress over $x$ for the current disparities. These two steps are
+alternated until $x$ and $\delta$ do not change any more. Starting
+in iteration $\nu=0$ we compute
+\begin{subequations}
+\begin{align}
+\delta^{(\nu)}&=\mathop{\text{argmin}}_{\delta\in\Delta\cap\Sigma}\sigma_f(x^{(\nu)},\delta),\label{eq-als1}\\
+x^{(\nu+1)}&=\mathop{\text{argmin}}_x\sigma_f(x,\delta^{(\nu)})\label{eq-als2}.
+\end{align}
+\end{subequations}
+We then increase $\nu$ by one and go into the next iteration. 
+And so on, until convergence.
+
+## Normalized Cone Regression
+
+The step \eqref{eq-als1} is comparatively easy. We compute the least squares
+projection of $f(d(x))$ on the cone $\Delta$ and then normalize this projection
+to give it length one. If $\Delta$ is the cone of monotone vectors, as in
+ordinal MDS, the cone projection is *monotone regression*. The fact that
+projection on the intersection of $\Delta$ and $\Sigma$ is equivalent
+to normalizing the projection of $\Delta$ is due to @deleeuw_U_75a 
+and more generally (and more rigorously) to @bauschke_bui_wang_18.
+Since this step is the same as in the standard MDS algorithms such as
+smacof (@deleeuw_mair_A_09c, @mair_groenen_deleeuw_A_22) we do not go
+into details here, and just refer to the literature.
+
+## Majorization
+
+The second step, minimizing over $x$ for fixed current $\delta$, is much more complicated. There is
+no analytic solution, as in the first step, and minimization requires an iterative process of its own.
+Thus the second step requires an infinite number of "inner" iterations. As a compromise, we deviate from the strict ALS framework by not minimizing fStress over $x$ for fixed $\delta$,
+but by merely taking a single one of the "inner" iterations and merely decrease fStress. If this is
+done judiciously we still obtain a convergent sequence of updates. This is also what is done in other
+MDS algorithms such as smacof (@deleeuw_C_77) and alscal (@takane_young_deleeuw_A_77).
+
+In smacof the inner iteration step is a majorization step, by now more commonly known as an MM step.
+Briefly, we find a function $\kappa_f(x;y)$ such that 
+
+* $\kappa_f(x,y)\leq\sigma_f(x)$ for all $x$ and $y$ in $\Xi$, and 
+* $\kappa_f(y;y)=\sigma_f(y)$ for all $y$ in $\Xi$.
+
+An inner iteration is of the form
+\begin{equation}
+x^{(\mu+1)}=\mathop{\text{argmin}}_{x\in\Xi}\kappa(x,x^{(\mu)})\label{eq-inner}
+\end{equation}
+Remember that this inner iterative process goes on within step 2 of each ALS update. Now, from \eqref{eq-inner},
+\begin{equation}
+\sigma_f(x^{(\mu+1)})\leq\kappa_f(x^{(\mu+1)},x^{(\mu)})\leq\kappa_f(x^{(\mu)},x^{(\mu)})=
+\sigma_f(x^{(\mu)}).\eqref{eq-sandwich}
+\end{equation}
 $$
 
-#  First-order Taylor approximation to powered distances
 
+
+
+We can approximate $f(d(x))$ near $d(y)$ with 
+\begin{equation}
+f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)).\label{eq-taylor}
+\end{equation}
+Define
+\begin{equation}
+\eta_f(x;y):=\sum_{k=1}^K w_k(\delta_k-f(d_k(y))-\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)))^2.\label{eq-defeta}
+\end{equation}
+
+Note that $\eta_f(x;x)=\sigma_f(x)$ for all $x$ and if $f$ is the identity then 
+$\eta_f(x;y)=\sigma_f(x)$ for all $x$ and $y$.
+Define
+\begin{subequations}
+\begin{align}
+\tilde w_k(y)&:=w_k\{\mathcal{D}f(d_k(y))\}^2,\\
+\tilde\delta_k(y)&:=\frac{\delta_k-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y).
+\end{align}
+\end{subequations}
+Then
 $$
-d_k^r(x)\approx d_k^r(y)+rd_k^{r-1}(y)(d_k(x)-d_k(y))
+\eta_f(x;y)=\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
 $$
-Note that if $r=1$ both sides are equal to $d_k(x)$. If $r=2$
+Now majorize. 
 $$
-d_k^2(x)\approx d_k^2(y)+2d_k(y)(d_k(x)-d_k(y))=2d_k(x)d_k(y)-d_k^2(y).
+\eta_f(x;y)=C+\sum_{k=1}^K\tilde w_k(y)d_k^2(x)-2\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)
+$$
+Now if $\delta_k(y)>0$ we use
+$$
+d_k(x)\geq\frac{1}{d_k(y)}\text{tr}\ X'A_kY
+$$
+and if $\delta_k(y)<0$ we use
+$$
+d_k(x)\leq\frac12\frac{1}{d_k(y)}\{d_k^2(y)+d_k^2(x)\}
+$$
+Thus
+$$
+\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)\geq\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_ky+\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_kx+C
+$$
+$$
+V:=\sum_{k=1}^K \tilde w_kA_k,\\
+B(y):=\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}A_k,\\
+H(y):=\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}A_k.
+$$
+$$
+\sigma_f(x)\leq C -2x'B(y)y+x'(V+H(y))x
+$$
+$$
+\sigma_f(x^+)\approx\eta_f(x^+;x)\leq\eta_f(x,x)=\sigma_f(x).
 $$
 
 # Gauss-Newton approximation to rStress
 
 \begin{align}
-\sigma_r(x)\approx&\sum_k w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
-&\sum_k w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
+\sigma_r(x)\approx&\sum_{k=1}^K w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
+&\sum_{k=1}^K w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
 \end{align}
 Let
 $$
@@ -89,9 +233,11 @@ $$
 $$
 then
 $$
-\sigma_r(x;y)\approx\sum_k\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
+\sigma_r(x;y)\approx\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
 $$
 which can be minimized by majorization. Also if $x=y$ then $\sigma_r(x;x)=\sigma_r(x)$.
+
+# rStress
 
 For $r\geq 1$ we have $\delta_k(y)\geq 0$. 
 
@@ -100,32 +246,22 @@ regular smacof.
 
 For $r=2$ we have $\tilde w_k(y)=4w_kd_k^2(y)$ and $\tilde\delta_k(y)=\frac{\delta_k^2+d_k^2(y)}{2d_k(y)}$.
 
-# Algorithm
 
-$$
-\sigma_r(x^+)\approx\sigma_r(x^+;x)\leq\sigma_r(x;x)=\sigma_r(x)
-$$
 
-# fStress
-
-$$
-\sigma_f(x)=\sum_k w_k(f(\delta_k)-f(d_k(x))^2
-$$
-$$
-f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y))
-$$
-$$
-\tilde w_k(y)=w_k\{\mathcal{D}f(d_k(y))\}^2
-$$
-$$
-\tilde\delta_k(y)=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y)
-$$
-The Gauss-Newton approximation will be good if $f(\delta_k)\approx f(d_k(y))$, which will
-tend to be true for smooth monotone $f$ (or for Lipschitz $f$) if  $\delta_k\approx d_k(y)$. This suggests starting with some regular smacof iterations (although Torgerson may be good enough).
 
 # Negative $\tilde\delta_k$
 
-If some of the $\tilde\delta_k$ are negative we may usae the AM/GM inequality
-for majorization as in @heiser_91.
+If some of the $\tilde\delta_k$ are negative we may use the AM/GM inequality
+for majorization as in @heiser_91. For now the program gives an error.
+
+# Nonmetric
+
+In the metric case we have to decide if we want to fit $d^r$ to
+$\delta$ or to $\delta^r$. This can be handled in the R driver.
+In the non-metric case it does not make a difference which of the
+two we choose.
+$$
+\sigma(x,\hat d)=
+$$
 
 # References

@@ -1,6 +1,6 @@
-#include "smacofSSSamelas.h"
+#include "smacofSSRStress.h"
 
-void smacofSSSammonMonotone(int* ndat, int* ties, double* snew, int* iind,
+void smacofSSRStressMonotone(int* ndat, int* ties, double* snew, int* iind,
                              int* jind, int* blks, double* edis, double* dhat,
                              double* wght) {
     if (*ties == 1) {
