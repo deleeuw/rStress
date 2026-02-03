@@ -58,20 +58,25 @@ appreciated, but is not required. The files can be found at
 
 # Loss Functions
 
-The Multidimensional Scaling (MDS) loss function fStress (@groenen_deleeuw_mathar_C_95, @deleeuw_E_17r) is defined as
+The Multidimensional Scaling (MDS) loss function fStress is defined as
 \begin{equation}
 \sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
 with $f$ increasing and differentiable in the open interval $(0,+\infty)$. 
 In \eqref{eq-fdef} the $w_k$ are positive *weights*, the $\delta_k$ are 
-known *dissimilarities*. The vector $x$ has the coordinates of an number
-of points in $\mathbb{R}^p$, and the $d_k$ are Euclidean *distances* between pairs 
-of these points. Metric least squares MDS minimizes fStress over $x$.
+known *dissimilarities*. The vector $x$ has the coordinates of $n$
+points in $\mathbb{R}^p$, and the $d_k(x)$ are Euclidean *distances* between pairs 
+of these points. For each $k$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
+and a matrix $A_k$ which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
+where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
+Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. Metric least squares MDS minimizes fStress over $x$.
+
+
 
 fStress was introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
-algorithm to minimize it was given, but the paper has formulas for the first 
+algorithm to minimize \eqref(eq-fdef) was given, but the paper has formulas for the first 
 and second derivatives. @deleeuw_E_17r uses the multivariate Faà di Bruno 
-formula to derive derivatives up to order four. These derivatives can 
+formula to give derivatives of fStress up to order four. These derivatives can 
 be used in general purpose minimization methods.
 
 
@@ -79,13 +84,13 @@ An important special case of fStress is rStress (also known as powerStress), whi
 \begin{equation}
 \sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2\label{eq-rdef}
 \end{equation}
-Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and logarithmic stress with $r\rightarrow 0$ by @ramsay_77. 
-There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements one of these techniques.
+Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ by @ramsay_77. 
+There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
 
 Minimizing of either fStress or rStress over $x$ is a metric MDS problem. The
 $\delta_k$, and consequently the $f(\delta_k)$, are $K$ known numbers. In non-metric
-MDS the loss functions are minimized over both $x$ and $\delta$, where $\delta$
-is constrained to be in a set $\Delta\subseteq\mathbb{R}^K$. For the ordinal 
+MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
+is constrained to be in a subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
 version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$. 
 Since $f$ is increasing, we can write fStress simply as
 \begin{equation}
@@ -106,14 +111,20 @@ where $\Delta$ is a convex cone in $\mathbb{R}^K$. This means we require
 the disparities to be in the intersection of the cone $\Delta$ and the sphere $\Sigma$ defined
 by \eqref{eq-normal}.
 
+It is convenient to think of metric MDS as the special case in which the 
+set $\Delta$ is the one-element set containing only the normalized dissimilarities
+$\delta$. Alternatively, as in smacof, we can choose for $\Delta$ the ray of all vectors
+that are non-negative multiples of the dissimilarities. In other words our metric
+MDS treats the dissimilarities as measured on a ratio scale.
 
-# Alternating Least Squares
+
+# Algorithm
 
 The technique proposed in this paper to minimize non-metric fStress or rStress
-is in the Alternating Least Squares (ALS) class. We start with an initial estimate
-of $x$. We then minimize $\sigma_f$ over $\delta$ in $\Delta\cap\Sigma$ for 
-the current $d(x)$. The minimizing $\delta$ is then used to minimize
-fStress over $x$ for the current disparities. These two steps are
+is in the Alternating Least Squares (ALS) family. We start with an initial estimate
+$x^{(0)}$. We then minimize $\sigma_f$ over $\delta$ in $\Delta\cap\Sigma$ for 
+the current $\smash{d(x^{(0)})}$. The minimizer $\smash{\delta^{(0)}}$ is then used to minimize
+fStress over $x$ for the current disparities, yielding $x^{(1)}$. These two steps are
 alternated until $x$ and $\delta$ do not change any more. Starting
 in iteration $\nu=0$ we compute
 \begin{subequations}
@@ -125,143 +136,163 @@ x^{(\nu+1)}&=\mathop{\text{argmin}}_x\sigma_f(x,\delta^{(\nu)})\label{eq-als2}.
 We then increase $\nu$ by one and go into the next iteration. 
 And so on, until convergence.
 
+
 ## Normalized Cone Regression
 
-The step \eqref{eq-als1} is comparatively easy. We compute the least squares
+In metric MDS there is no need for the first step \eqref{eq-als1}, because $\delta^{(\nu)}$ is equal to
+the normalized dissimilarities $\delta$ for all $\nu$.
+In the non-metric case step \eqref{eq-als1} is needed, but compared to \eqref{eq-als2} it is comparatively easy. We have to compute the least squares
 projection of $f(d(x))$ on the cone $\Delta$ and then normalize this projection
 to give it length one. If $\Delta$ is the cone of monotone vectors, as in
 ordinal MDS, the cone projection is *monotone regression*. The fact that
-projection on the intersection of $\Delta$ and $\Sigma$ is equivalent
-to normalizing the projection of $\Delta$ is due to @deleeuw_U_75a 
+projection on the intersection of $\Delta$ and $\Sigma$ is the same thing as
+normalizing the projection on $\Delta$ is due to @deleeuw_U_75a 
 and more generally (and more rigorously) to @bauschke_bui_wang_18.
-Since this step is the same as in the standard MDS algorithms such as
+Since this step is the same as in standard MDS algorithms such as
 smacof (@deleeuw_mair_A_09c, @mair_groenen_deleeuw_A_22) we do not go
 into details here, and just refer to the literature.
 
 ## Majorization
 
-The second step, minimizing over $x$ for fixed current $\delta$, is much more complicated. There is
-no analytic solution, as in the first step, and minimization requires an iterative process of its own.
-Thus the second step requires an infinite number of "inner" iterations. As a compromise, we deviate from the strict ALS framework by not minimizing fStress over $x$ for fixed $\delta$,
-but by merely taking a single one of the "inner" iterations and merely decrease fStress. If this is
-done judiciously we still obtain a convergent sequence of updates. This is also what is done in other
+The second step \eqref{eq-als2}, minimizing over $x$ for fixed current $\delta$, is more complicated. There is
+no analytic solution, similar to what we have in the first step, and minimization requires an iterative process of its own. Thus, except in some very special cases, the second step requires an infinite number of "inner" iterations. Since implmenting an infinite number of iterations is impossible
+we have to truncate the inner iteration sequence at some point. In our software we deviate from the strict ALS framework by not minimizing fStress over $x$ for fixed $\delta$,
+but by merely taking a single "inner" iteration and merely decrease fStress. If this is
+done judiciously we still obtain a convergent sequence of updates. This is similar to the strategy in other
 MDS algorithms such as smacof (@deleeuw_C_77) and alscal (@takane_young_deleeuw_A_77).
 
 In smacof the inner iteration step is a majorization step, by now more commonly known as an MM step.
 Briefly, we find a function $\kappa_f(x;y)$ such that 
 
 * $\kappa_f(x,y)\leq\sigma_f(x)$ for all $x$ and $y$ in $\Xi$, and 
-* $\kappa_f(y;y)=\sigma_f(y)$ for all $y$ in $\Xi$.
+* $\kappa_f(x;y)=\sigma_f(x)$ if and only if $x=y$.
 
 An inner iteration is of the form
 \begin{equation}
-x^{(\mu+1)}=\mathop{\text{argmin}}_{x\in\Xi}\kappa(x,x^{(\mu)})\label{eq-inner}
+x^{(\mu+1)}=\mathop{\text{argmin}}_{x\in\Xi}\kappa(x,x^{(\mu)}).\label{eq-inner}
 \end{equation}
-Remember that this inner iterative process goes on within step 2 of each ALS update. Now, from \eqref{eq-inner},
+If $x^{(\mu+1)}=x^{(\mu)}$ we declare convergence and stop.
+From \eqref{eq-inner},
 \begin{equation}
-\sigma_f(x^{(\mu+1)})\leq\kappa_f(x^{(\mu+1)},x^{(\mu)})\leq\kappa_f(x^{(\mu)},x^{(\mu)})=
-\sigma_f(x^{(\mu)}).\eqref{eq-sandwich}
+\sigma_f(x^{(\mu+1)})\leq\kappa_f(x^{(\mu+1)},x^{(\mu)})<\kappa_f(x^{(\mu)},x^{(\mu)})=\sigma_f(x^{(\mu)}).
+\label{eq-sandwich}
 \end{equation}
-$$
+Thus an inner majorization step upgrading $x$ for given $\delta$ decreases
+fStress (unless we stop). Remember that in ALS the inner iterative process (indexed by $\mu$) goes on within step 2 of the "outer" update (indexed by $\nu$). 
 
+In @deleeuw_groenen_mair_E_16a a majorization method was proposed to minimize rStress.
+It majorizes $d^r$ as a function of $x$, and 
+for this it uses the specific properties of the power function. It consequently cannot be
+used for fStress. The technique is incorporated in the smacofx R package, and 
+numerical experience indicates it works, but convergence can be painfully slow.
+Because of the generality of the function $f$ (any differentiable increasing function)
+it seems impossible to develop an majorization method for fStress along the same lines as
+the one for rStress.
+Consequently we go a somewhat different route in this paper. We do not
+only deviate from the strict ALS procedure by only partially minimizing
+loss over $x$ for fixed $d$, we also deviate from the strict majorization
+approach by majorizing an approximation of fStress. 
 
-
-
-We can approximate $f(d(x))$ near $d(y)$ with 
+In deriving the approximation and majorization we surpress the dependency of fStress
+on $\delta$, because in the second ALS substep $\delta$ is just a vector of constants.
+We first approximate $f(d(x))$ near $d(y)$ with 
 \begin{equation}
 f(d_k(x))\approx f(d_k(y))+\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)).\label{eq-taylor}
 \end{equation}
 Define
 \begin{equation}
-\eta_f(x;y):=\sum_{k=1}^K w_k(\delta_k-f(d_k(y))-\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)))^2.\label{eq-defeta}
+\omega_f(x;y):=\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(y))-\mathcal{D}f(d_k(y))(d_k(x)-d_k(y)))^2,\label{eq-defeta}
 \end{equation}
+Note that in \eqref{eq-taylor} the derivative is with respect to $d$, not with respect to $x$ or $y$. This
+is a major difference with the majorizations in @deleeuw_groenen_mair_E_16a.
 
-Note that $\eta_f(x;x)=\sigma_f(x)$ for all $x$ and if $f$ is the identity then 
-$\eta_f(x;y)=\sigma_f(x)$ for all $x$ and $y$.
-Define
+Note that $\omega_f(x;x)=\sigma_f(x)$ for all $x$ and if $f$ is the identity then 
+$\omega_f(x;y)=\sigma_f(x)$ for all $x$ and $y$. If $f$ is linear with intercept 
+$\beta$ and slope $\alpha$ then 
+\begin{equation}
+\omega_f(x,y)=a^2\sum_{k=1}^Kw_k(\delta_k-d_k(x))^2=a^2\sigma_r(x),\label{eq-linear}
+\end{equation}
+with $r=1$.
+
+We now give an alternative and more convenient expression for $\omega_f(x,y)$. Define
 \begin{subequations}
 \begin{align}
-\tilde w_k(y)&:=w_k\{\mathcal{D}f(d_k(y))\}^2,\\
-\tilde\delta_k(y)&:=\frac{\delta_k-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y).
+\tilde w_k(y)&:=w_k\{\mathcal{D}f(d_k(y))\}^2,\label{eq-tildew}\\
+\tilde\delta_k(y)&:=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y).\label{eq-tilded}
 \end{align}
 \end{subequations}
 Then
-$$
-\eta_f(x;y)=\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
-$$
-Now majorize. 
-$$
-\eta_f(x;y)=C+\sum_{k=1}^K\tilde w_k(y)d_k^2(x)-2\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)
-$$
-Now if $\delta_k(y)>0$ we use
-$$
-d_k(x)\geq\frac{1}{d_k(y)}\text{tr}\ X'A_kY
-$$
-and if $\delta_k(y)<0$ we use
-$$
-d_k(x)\leq\frac12\frac{1}{d_k(y)}\{d_k^2(y)+d_k^2(x)\}
-$$
-Thus
-$$
-\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k(y)d_k(x)\geq\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_ky+\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}x'A_kx+C
-$$
-$$
-V:=\sum_{k=1}^K \tilde w_kA_k,\\
-B(y):=\sum_{\tilde\delta_k(y)>0}w_k\frac{\delta_k(y)}{d_k(y)}A_k,\\
-H(y):=\frac12\sum_{\tilde\delta_k(y)<0}w_k\frac{\delta_k(y)}{d_k(y)}A_k.
-$$
-$$
-\sigma_f(x)\leq C -2x'B(y)y+x'(V+H(y))x
-$$
-$$
-\sigma_f(x^+)\approx\eta_f(x^+;x)\leq\eta_f(x,x)=\sigma_f(x).
-$$
+\begin{equation}
+\omega_f(x;y)=\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2.\label{eq-omegas}
+\end{equation}
+We see from \eqref{eq-tildew} that $\tilde w_k(y)$ is always non-negative and from \eqref{eq-tilded}
+that $\tilde\delta_k(y)$ can be negative if $d_k(y)>\delta_k$. For convex $f$, however, we have
+\begin{equation}
+\tilde\delta_k(y)=\frac{f(\delta_k)-f(d_k(y))}{\mathcal{D}f(d_k(y))}+d_k(y)\geq d_k(x)\geq 0.\label{eq-convex}
+\end{equation}
 
-# Gauss-Newton approximation to rStress
-
+For rStress equations \eqref{eq-tildew} and \eqref{eq-tilded} become
+\begin{subequations}
 \begin{align}
-\sigma_r(x)\approx&\sum_{k=1}^K w_k(\delta_k^r-d_k^r(y)-rd_k^{r-1}(y)(d_k(x)-d_k(y)))^2=\\
-&\sum_{k=1}^K w_k\{rd_k^{r-1}(y)\}^2(\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}-(d_k(x)-d_k(y)))^2
+\tilde w_k(y)&:=r^2w_kd_k^{2(r-1)}(y),\label{eq-tildewr}\\
+\tilde\delta_k(y)&:=\frac{\delta_k^r+(r-1)d_k^r(y)}{rd_k^{r-1}(y)}.\label{eq-tildedr}
 \end{align}
-Let
+\end{subequations}
+By convexity $\tilde\delta_k(y)$ is non-negative if $r\geq 1$. For $0<r<1$ we have 
+$\tilde\delta_k(y)>0$ if and only if $\smash{d_k(y)<(1-r)^r\delta_k}$. If $\delta_k>d_k(y)$
+then $\tilde\delta_k(y)>d_k(y)\geq 0$.
+
+By writing $\omega_f(x,y)$ as in \eqref{eq-omegas} we are on familiar majorization terrain.
+If $\delta_k(y)>0$ we use Cauchy-Schwartz, as in standard smacof,
+\begin{subequations}
+\begin{equation}
+d_k(x)\geq\frac{1}{d_k(y)}\text{tr}\ x'A_ky,\label{eq-cs}
+\end{equation}
+and if $\delta_k(y)<0$ we use the arithmetic mean/geometric mean (AM/GM) inequality
+in the form
+\begin{equation}
+d_k(x)\leq\frac12\frac{1}{d_k(y)}\{y'A_ky+x'A_kx\},\label{eq-amgm}
+\end{equation}
+\end{subequations}
+Use of the AM/GM inequality for majorizing terms with negative dissimilarities 
+was pioneered by @heiser_91.
+
+Define the matrices
+\begin{subequations}
+\begin{align}
+V(y)&:=\sum_{k=1}^K\tilde w_k(y)A_k,\\
+B(y)&:=\sum_{\tilde\delta_k(y)>0}\tilde w_k\frac{\tilde\delta_k(y)}{d_k(y)}A_k,\\
+H(y)&:=\sum_{\tilde\delta_k(y)<0}\tilde w_k\frac{\tilde\delta_k(y)}{d_k(y)}A_k.
+\end{align}
+\end{subequations}
+Note that all three matrices (more preecisely matrix-valued functions) are positive semi-definite.
+We can use these matrices for a majorization of $\omega_f(x;y)$ at $y$ is
+\begin{equation}
+\omega_f(x;y)=C+\frac12 x'(V(y)+H(y))x-x'B(y)x\leq\kappa_f(x;y),\label{eq-matmajx}
+\end{equation}
+with
+\begin{equation}
+\kappa_f(x;y):=C+\frac12 x'(V(y)+H(y))x-x'B(y)y,\label{eq-matmajy}
+\end{equation}
+where $C$ is a constant that depends on $y$ but not on $x$.
+
+We now update using
 $$
-\tilde w_k(y):=r^2w_kd_k^{2(r-1)}(y)
+x^{(\mu+1)}=\mathop{\text{argmin}}_x\kappa_f(x;x^{(\mu)})=(V(x^{(\mu)})+H(x^{(\mu)}))^+B(x^{(\mu)})x^{(\mu)},
 $$
-and
+which results in
 $$
-\tilde\delta_k(y):=\frac{\delta_k^r-d_k^r(y)}{rd_k^{r-1}(y)}+d_k(y)=\frac{\delta_k^r+(r-1)d_k^r(y)}{rd_k^{r-1}(y)}
+\sigma_f(x^{(\mu+1)})\approx\omega_f(x^{(\mu+1)};x^{(\mu)})\leq\kappa_f(x^{(\mu+1)};x^{(\mu)})<\kappa_f(x^{(\mu)};x^{(\mu)})=\sigma_f(x^{(\mu)}).
 $$
-then
-$$
-\sigma_r(x;y)\approx\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2
-$$
-which can be minimized by majorization. Also if $x=y$ then $\sigma_r(x;x)=\sigma_r(x)$.
+Unlike in smacof there is no guarantee that $\sigma_f$ decreases from one iteration to the other. Monotone
+convergence of loss function values will only happen if the approximation is good, i.e. if
+$d(x^{(\mu+1)}$ is close to $d_k(x^{(\mu)}$. This requires closer monitoring of convergence than 
+in smacof. Also note that if $\tilde\delta_k(y)<0$ for all $k$ then $B(y)=0$, which means that the update 
+from $y$ is equal to zero. Again, this eventuality must be monitored.
 
-# rStress
+# Software
 
-For $r\geq 1$ we have $\delta_k(y)\geq 0$. 
+# Examples
 
-For $r=1$ we have $\tilde w_k(y)=w_k$ and $\tilde\delta_k(y)=\delta_k$. This is
-regular smacof.
-
-For $r=2$ we have $\tilde w_k(y)=4w_kd_k^2(y)$ and $\tilde\delta_k(y)=\frac{\delta_k^2+d_k^2(y)}{2d_k(y)}$.
-
-
-
-
-# Negative $\tilde\delta_k$
-
-If some of the $\tilde\delta_k$ are negative we may use the AM/GM inequality
-for majorization as in @heiser_91. For now the program gives an error.
-
-# Nonmetric
-
-In the metric case we have to decide if we want to fit $d^r$ to
-$\delta$ or to $\delta^r$. This can be handled in the R driver.
-In the non-metric case it does not make a difference which of the
-two we choose.
-$$
-\sigma(x,\hat d)=
-$$
 
 # References

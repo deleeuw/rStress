@@ -2,25 +2,21 @@ rStress <- function(delta,
                     xinit,
                     wght = 1 - diag(nrow(xinit)),
                     rpow = 1,
-                    dpow = FALSE,
                     itmax = 10000,
                     eps = 1e-6,
                     verbose = TRUE) {
   itel <- 1
   nobj <- nrow(xinit)
   mobj <- 1 / nobj
-  if (dpow) {
-    dhat <- delta^rpow
-  } else {
-    dhat <- delta
-  }
+  dhat <- delta^rpow
+  dssq <- sum(wght * dhat^2)
   xold <- xinit
   dold <- as.matrix(dist(xold))
-  sold <- sum(wght * (dhat - (dold^rpow))^2) / 2
+  sold <- .5 * sum(wght * (dhat - (dold^rpow))^2) / dssq
   repeat {
     wmat <- (rpow^2) * wght * ((dold + diag(nobj))^(2 * (rpow - 1)))
     dmat <- (dhat + (rpow - 1) * (dold^rpow)) / (rpow * (dold + diag(nobj))^(rpow - 1))
-    hmat <- 0.5 * (dmat < 0) * (1 / (dold + diag(nobj)))
+    hmat <- (dmat < 0) * (1 / (dold + diag(nobj)))
     sgno <- sum(wmat * (dmat - dold)^2) / 2 # always sgno = sold
     vmat <- -(wmat + hmat)
     diag(vmat) <- -rowSums(vmat)

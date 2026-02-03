@@ -2,7 +2,7 @@ dyn.load("smacofSSRStress.so")
 
 source("smacofDataUtilities.R")
 source("smacofPlots.R")
-source("smacofTorgerson.R")
+source("smacofSSRStressInit.R")
 
 smacofSSRStress <- function(theData,
                             ndim = 2,
@@ -13,7 +13,6 @@ smacofSSRStress <- function(theData,
                             rpow = 1.0,
                             digits = 8,
                             width = 10,
-                            dpow = FALSE,
                             verbose = TRUE,
                             weighted = FALSE,
                             ordinal = FALSE) {
@@ -21,24 +20,15 @@ smacofSSRStress <- function(theData,
   ndat <- theData$ndat
   iind <- theData$iind
   jind <- theData$jind
-  if (dpow) {
-    dhat <- theData$delta^rpow
-  } else {
-    dhat <- theData$delta
-  }
   wght <- theData$weights
+  dhat <- theData$delta^rpow
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
-    xinit <- smacofTorgerson(theData, ndim)$conf
+    h <- smacofSSRStressInit(theData, ndim, rpow)
+    xold <- h$x
+    edis <- h$edis
+    sold <- h$rstress
   }
-  edis <- rep(0, ndat)
-  for (k in 1:ndat) {
-    i <- iind[k]
-    j <- jind[k]
-    edis[k] <- sqrt(sum((xinit[i, ] - xinit[j, ])^2))
-  }
-  xold <- xinit
-  sold <- sum(wght * (dhat - edis^rpow)^2)
   itel <- 1
   blks <- theData$blocks
   snew <- 0.0
