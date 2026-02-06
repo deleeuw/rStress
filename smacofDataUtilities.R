@@ -43,7 +43,7 @@ makeMDSData <- function(delta, weights = NULL) {
 }
 
 fromMDSData <- function(theData) {
-  ndat <-theData$ndat
+  ndat <- theData$ndat
   nobj <- theData$nobj
   delta <- matrix(0, nobj, nobj)
   weights <- matrix(0, nobj, nobj)
@@ -51,7 +51,7 @@ fromMDSData <- function(theData) {
     i <- theData$iind[k]
     j <- theData$jind[k]
     delta[i, j] <- delta[j, i] <- theData$delta[k]
-    weights[i, j] <- weights[j, i] <- theData$weights[kdelta]
+    weights[i, j] <- weights[j, i] <- theData$weights[k]
   }
   return(list(delta = as.dist(delta), weights = as.dist(weights)))
 }

@@ -54,10 +54,5 @@ gruijterDist <- gruijter
 gruijterMatrix <- as.matrix(gruijter)
 gruijterData <- makeMDSData(gruijterDist)
 gruijterLabels <- attr(gruijter, "Labels")
-igman <- gruijterMatrix^2
-rgman <- apply(igman, 1, mean)
-mgman <- mean(igman)
-cgman <- -(igman - outer(rgman, rgman, "+") + mgman) / 2
-sgman <- eigen(cgman)
-xinit <- sgman$vectors[, 1:2] %*% diag(sqrt(sgman$values[1:2]))
+
 

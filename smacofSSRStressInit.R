@@ -1,6 +1,7 @@
+
 library(RSpectra)
 
-smacofTorgerson <- function(theData, ndim = 2) {
+smacofSSRStressInit <- function(theData,  ndim = 2, rpow = 1) {
   nobj <- theData$nobj
   ndat <- theData$ndat
   wght <- theData$weights
@@ -27,26 +28,44 @@ smacofTorgerson <- function(theData, ndim = 2) {
   for (k in 1:ndat) {
     i <- theData$iind[k]
     j <- theData$jind[k]
-    edis[k] <- sum((x[i,] - x[j, ])^2)
+    edis[k] <- sqrt(sum((x[i,] - x[j, ])^2))
   }
-  sdd <- sum(wght * edis^2)
-  sde <- sum(wght * dhat * edis)
-  lbd <- sde / sdd
+  dhat <- theData$delta^rpow
+  dhat <- dhat / sqrt(sum(wght * dhat ^ 2))
+  dpow <- edis^rpow
+  sdd <- sum(wght * dpow^2)
+  sde <- sum(wght * dhat * dpow)
+  lbd <- (sde / sdd)^(1 / rpow)
   edis <- lbd * edis
   x <- lbd * x
-  sstress <- sum(wght * (dhat - edis)^2) / wsum
-  result <- list(
-    delta = theData$delta ^ 2,
-    dhat = dhat,
-    confdist = edis,
-    conf = x,
-    weightmat = theData$weights,
-    sstress = sstress,
-    ndim = ndim,
-    nobj = nobj,
-    iind = theData$iind,
-    jind = theData$jind
-  )
-  class(result) <- c("smacofSSResult", "smacofTorgersonResult")
-  return(result)
+  rstress <- sum(wght * (dhat - edis^rpow)^2)
+  dmat <- matrix(0, nobj, nobj)
+  for (k in 1:ndat) {
+    i <- theData$iind[k]
+    j <- theData$jind[k]
+    dmat[i, j] <- dmat[j, i] <- edis[k]
   }
+  return(list(x = x, edis = edis, dhat = dhat, rstress = rstress))
+}
+
+smacofSSRStressScale <- function(theData, xinit, rpow) {
+  ndat <- theData$ndat
+  wght <- theData$weights
+  edis <- rep(0, ndat)
+  for (k in 1:ndat) {
+    i <- theData$iind[k]
+    j <- theData$jind[k]
+    edis[k] <- sqrt(sum((x[i,] - x[j, ])^2))
+  }
+  dhat <- theData$delta^rpow
+  dhat <- dhat / sqrt(sum(wght * dhat ^ 2))
+  dpow <- edis^rpow
+  sdd <- sum(wght * dpow^2)
+  sde <- sum(wght * dhat * dpow)
+  lbd <- (sde / sdd)^(1 / rpow)
+  edis <- lbd * edis
+  x <- lbd * x
+  rstress <- sum(wght * (dhat - edis^rpow)^2)
+  result <- smacofSSRStressScale(theData)
+  return(result)
+}

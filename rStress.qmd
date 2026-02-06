@@ -46,6 +46,10 @@ suppressPackageStartupMessages(library(knitr, quietly = TRUE))
 suppressPackageStartupMessages(library(tinytex, quietly = TRUE))
 ```
 
+```{r load sources, echo = FALSE}
+source("smacofSSRStress.R")
+```
+
 \sectionbreak 
 
 **Note:** This is a working manuscript which will be expanded/updated
@@ -291,6 +295,54 @@ in smacof. Also note that if $\tilde\delta_k(y)<0$ for all $k$ then $B(y)=0$, wh
 from $y$ is equal to zero. Again, this eventuality must be monitored.
 
 # Software
+
+## Data
+
+The data and weights are in the MDS data format defined in @deleeuw_E_25b. This is
+a list with two scalars nobj and ndat, the number of objects and the number of data
+points (object pairs), and five vectors iind, jind, delta, blocks, weights 
+of length ndat. Vectors iind and jind have integers between 1 and n with
+iind > jind that code for which pairs of objects we have dissimlarity
+information. The dissimilarities are in delta, the weights in weights.
+Dissimilarities are sorted in increasing order and blocks indicates tie-blocks
+in the dissimilarities.
+
+In smacofSSRStress.R there is a function smacofSSRStress() which sets up 
+the parameters for a call to smacofSSRStressEngine(), which is coded in
+C and can be found in the shared library smacofSSRStress.so.
+
+The arguments of smacofSSRStress.R are
+```{r theargs, echo = FALSE}
+args(smacofSSRStress)
+```
+
+## Initial Estimate
+
+There are two possibilities. If xinit is not NULL then it is used as the 
+initial estimate of the configuration. This is useful, for example,
+if we start the iterations for, say, $r=\tfrac12$ with the solition for $r=1$.
+If xinit is NULL then the function smacofSSRStressInit() computes an initial estimate using classical MDS (also known as Torgerson-Gower MDS) on the dissimilarities.
+
+First we make sure the weights add up to one. If there are
+missing dissimilarities they are first imputed by setting them equal to the 
+weighted mean of the non-missing dissimilarities. Then we double center the squared
+dissimilarities and compute the classical scaling solution using
+the eigs_sym() function from the RSpectra package (@qiu_mei_24).
+
+Now we scale the solution, which is done with the R function
+smacofSSRStressScale(). We first normalize the powered dissimilarities
+such that their weighted sum of squares is equal to one. We then
+choose $\lambda$ to minimize
+$$
+\sigma(\lambda):=\sum_k w_k(\delta_k^r-d_k^r(\lambda x))^2=\sum_k w_k(\delta_k^r-\lambda^rd_k^r(x))^2,
+$$
+where $x$ is the Torgerson-Gower solution. The minimum is attained for
+$$
+\hat\lambda:=\left[\frac{\sum_k w_k\delta_k^rd_k^r(x)}{\sum_kw_kd_k^{2r}(x)}\right]^{1/r}.
+$$
+Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. This scaling is done
+also if xinit is not NULL.
+
 
 # Examples
 

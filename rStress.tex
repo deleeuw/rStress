@@ -240,7 +240,7 @@
 
 \title{Minimizing fStress and rStress by Majorizing Gauss-Newton}
 \author{Jan de Leeuw}
-\date{January 31, 2026}
+\date{February 4, 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -338,7 +338,7 @@ for \(\Delta\) the ray of all vectors that are non-negative multiples of
 the dissimilarities. In other words our metric MDS treats the
 dissimilarities as measured on a ratio scale.
 
-\section{Alternating Least Squares}\label{alternating-least-squares}
+\section{Algorithm}\label{algorithm}
 
 The technique proposed in this paper to minimize non-metric fStress or
 rStress is in the Alternating Least Squares (ALS) family. We start with
@@ -452,7 +452,7 @@ If \(f\) is linear with intercept \(\beta\) and slope \(\alpha\) then
 \omega_f(x,y)=a^2\sum_{k=1}^Kw_k(\delta_k-d_k(x))^2=a^2\sigma_r(x),\label{eq-linear}
 \end{equation} with \(r=1\).
 
-We now derive an alternative and more convenient expression for
+We now give an alternative and more convenient expression for
 \(\omega_f(x,y)\). Define \begin{subequations}
 \begin{align}
 \tilde w_k(y)&:=w_k\{\mathcal{D}f(d_k(y))\}^2,\label{eq-tildew}\\
@@ -509,9 +509,69 @@ matrices for a majorization of \(\omega_f(x;y)\) at \(y\) is
 \end{equation} where \(C\) is a constant that depends on \(y\) but not
 on \(x\).
 
-\[
-\sigma_f(x^+)\approx\omega_f(x^+;x)\leq\kappa_f(x^+;x)<\kappa_f(x;x)=\sigma_f(x).
-\]
+We now update using \[
+x^{(\mu+1)}=\mathop{\text{argmin}}_x\kappa_f(x;x^{(\mu)})=(V(x^{(\mu)})+H(x^{(\mu)}))^+B(x^{(\mu)})x^{(\mu)},
+\] which results in \[
+\sigma_f(x^{(\mu+1)})\approx\omega_f(x^{(\mu+1)};x^{(\mu)})\leq\kappa_f(x^{(\mu+1)};x^{(\mu)})<\kappa_f(x^{(\mu)};x^{(\mu)})=\sigma_f(x^{(\mu)}).
+\] Unlike in smacof there is no guarantee that \(\sigma_f\) decreases
+from one iteration to the other. Monotone convergence of loss function
+values will only happen if the approximation is good, i.e.~if
+\(d(x^{(\mu+1)}\) is close to \(d_k(x^{(\mu)}\). This requires closer
+monitoring of convergence than in smacof. Also note that if
+\(\tilde\delta_k(y)<0\) for all \(k\) then \(B(y)=0\), which means that
+the update from \(y\) is equal to zero. Again, this eventuality must be
+monitored.
+
+\section{Software}\label{software}
+
+\subsection{Data}\label{data}
+
+The data and weights are in the MDS data format defined in De Leeuw
+(\citeproc{ref-deleeuw_E_25b}{2025}). This is a list with two scalars
+nobj and ndat, the number of objects and the number of data points
+(object pairs), and five vectors iind, jind, delta, blocks, weights of
+length ndat. Vectors iind and jind have integers between 1 and n with
+iind \textgreater{} jind that code for which pairs of objects we have
+dissimlarity information. The dissimilarities are in delta, the weights
+in weights. Dissimilarities are sorted in increasing order and blocks
+indicates tie-blocks in the dissimilarities.
+
+In smacofSSRStress.R there is a function smacofSSRStress() which sets up
+the parameters for a call to smacofSSRStressEngine(), which is coded in
+C and can be found in the shared library smacofSSRStress.so.
+
+The arguments of smacofSSRStress.R are
+
+\begin{verbatim}
+function (theData, ndim = 2, xinit = NULL, ties = 1, itmax = 1000, 
+    eps = 1e-06, rpow = 1, digits = 8, width = 10, verbose = TRUE, 
+    weighted = FALSE, ordinal = FALSE) 
+NULL
+\end{verbatim}
+
+\subsection{Initial Estimate}\label{initial-estimate}
+
+The initial estimate of the configuration is calculated using classical
+MDS (also known as Torgerson-Gower MDS) on the dissimilarities. First we
+make sure the weights add up to one. If there are missing
+dissimilarities they are first imputed by setting them equal to the
+weighted mean of the non-missing dissimilarities. Then we double center
+the squared dissimilarities and compute the classical scaling solution
+using the eigs\_sym() function from the RSpectra package (Qiu and Mei
+(\citeproc{ref-qiu_mei_24}{2024})).
+
+Now we scale the solution, which is done with the R function
+smacofSSRStressScale(). We first normalize the powered dissimilarities
+such that their weighted sum of squares is equal to one. We then choose
+\(\lambda\) to minimize \[
+\sigma(\lambda):=\sum_k w_k(\delta_k^r-d_k^r(\lambda x))^2=\sum_k w_k(\delta_k^r-\lambda^rd_k^r(x))^2,
+\] where \(x\) is the Torgerson-Gower solution. The minimum is attained
+for \[
+\hat\lambda:=\left[\frac{\sum_k w_k\delta_k^rd_k^r(x)}{\sum_kw_kd_k^{2r}(x)}\right]^{1/r}.
+\] Our initial estimate is \(\hat\lambda x\) wit distances
+\(\hat\lambda d_k(x)\).
+
+\section{Examples}\label{examples}
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
@@ -539,6 +599,10 @@ Netherlands: North Holland Publishing Company.
 ---------. 2017. {``{Higher Partials of fStress. Who Needs Them ?}''}
 2017.
 \url{https://jansweb.netlify.app/publication/deleeuw-e-17-r/deleeuw-e-17-r.pdf}.
+
+\bibitem[\citeproctext]{ref-deleeuw_E_25b}
+---------. 2025. {``Yet Another Smacof - Square Symmetric Case.''} 2025.
+\url{https://jansweb.netlify.app/publication/deleeuw-e-25-b/}.
 
 \bibitem[\citeproctext]{ref-deleeuw_groenen_mair_E_16a}
 De Leeuw, Jan, Patrick Groenen, and Patrick Mair. 2016. {``{Minimizing
@@ -578,6 +642,11 @@ Mair, Patrick, Patrick J. F. Groenen, and Jan De Leeuw. 2022. {``{More
 on Multidimensional Scaling in R: smacof Version 2}.''} \emph{Journal of
 Statistical Software} 102 (10): 1--47.
 \url{https://www.jstatsoft.org/article/view/v102i10}.
+
+\bibitem[\citeproctext]{ref-qiu_mei_24}
+Qiu, Yixuan, and Jiali Mei. 2024. \emph{{RSpectra: Solvers for
+Large-Scale Eigenvalue and SVD Problems}}.
+\url{https://CRAN.R-project.org/package=RSpectra}.
 
 \bibitem[\citeproctext]{ref-ramsay_77}
 Ramsay, James O. 1977. {``{Maximum Likelihood Estimation in

@@ -20,15 +20,17 @@ smacofSSRStress <- function(theData,
   ndat <- theData$ndat
   iind <- theData$iind
   jind <- theData$jind
-  wght <- theData$weights
+  wght <- theData$weights / sum(theData$weights)
   dhat <- theData$delta^rpow
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
-    h <- smacofSSRStressInit(theData, ndim, rpow)
-    xold <- h$x
-    edis <- h$edis
-    sold <- h$rstress
+    hini <- smacofSSRStressInit(theData, ndim, rpow)
+  } else {
+    hini <- smacofSSRStressScale(theData, xinit, rpow)
   }
+  xold <- hini$x
+  edis <- hini$edis
+  sold <- hini$rstress
   itel <- 1
   blks <- theData$blocks
   snew <- 0.0
