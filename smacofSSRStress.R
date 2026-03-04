@@ -2,7 +2,7 @@ dyn.load("smacofSSRStress.so")
 
 source("smacofDataUtilities.R")
 source("smacofPlots.R")
-source("smacofSSRStressInit.R")
+source("smacofTorgerson.R")
 
 smacofSSRStress <- function(theData,
                             ndim = 2,
@@ -24,13 +24,19 @@ smacofSSRStress <- function(theData,
   dhat <- theData$delta^rpow
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
-    hini <- smacofSSRStressInit(theData, ndim, rpow)
-  } else {
-    hini <- smacofSSRStressScale(theData, xinit, rpow)
+    xold <- smacofTorgerson(theData, ndim)
+  } 
+  sold <- 0.0
+  edis <- rep(0, ndat)
+  dhat <- theData$delta^rpow
+  dhat <- dhat / sqrt(sum(wght * dhat^2))
+  for (k in 1:ndat) {
+    i <- iind[k]
+    j <- jind[k]
+    edis[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
+    sold <- sold + (dhat[k] - edis[k]^rpow)^2
   }
-  xold <- hini$x
-  edis <- hini$edis
-  sold <- hini$rstress
+  # scale
   itel <- 1
   blks <- theData$blocks
   snew <- 0.0

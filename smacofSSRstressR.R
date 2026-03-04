@@ -17,11 +17,8 @@ smacofSSRStressR <- function(theData,
   dhat <- delta^rpow
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
-    hini <- smacofSSRStressInit(theData, ndim, rpow)
-  } else {
-    hini <- smacofSSRStressScale(theData, xinit, rpow)
-  }
-  xold <- matrix(hini$x, nobj, ndim)
+    xold <- smacofTorgerson(theData, ndim)
+  } 
   dold <- as.matrix(dist(xold))
   sold <- sum(wght * (dhat - dold^rpow)^2)
   mobj <- 1 / nobj

@@ -39,12 +39,6 @@ smacofSSRStressInit <- function(theData,  ndim = 2, rpow = 1) {
   edis <- lbd * edis
   x <- lbd * x
   rstress <- sum(wght * (dhat - edis^rpow)^2)
-  dmat <- matrix(0, nobj, nobj)
-  for (k in 1:ndat) {
-    i <- theData$iind[k]
-    j <- theData$jind[k]
-    dmat[i, j] <- dmat[j, i] <- edis[k]
-  }
   return(list(x = x, edis = edis, dhat = dhat, rstress = rstress))
 }
 

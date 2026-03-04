@@ -75,14 +75,9 @@ and a matrix $A_k$ which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'
 where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
 Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. Metric least squares MDS minimizes fStress over $x$.
 
-
-
-fStress was introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
-algorithm to minimize \eqref(eq-fdef) was given, but the paper has formulas for the first 
-and second derivatives. @deleeuw_E_17r uses the multivariate Faà di Bruno 
-formula to give derivatives of fStress up to order four. These derivatives can 
-be used in general purpose minimization methods.
-
+fStress was first introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
+algorithm to minimize loss \eqref(eq-fdef) was given, but the paper has formulas for the first 
+and second derivatives (see also @deleeuw_E_17r), which can of course be used in general purpose optimization routines.
 
 An important special case of fStress is rStress (also known as powerStress), which is
 \begin{equation}
@@ -159,9 +154,9 @@ into details here, and just refer to the literature.
 ## Majorization
 
 The second step \eqref{eq-als2}, minimizing over $x$ for fixed current $\delta$, is more complicated. There is
-no analytic solution, similar to what we have in the first step, and minimization requires an iterative process of its own. Thus, except in some very special cases, the second step requires an infinite number of "inner" iterations. Since implmenting an infinite number of iterations is impossible
+no analytic solution, unlike the first step, and minimization requires an iterative process of its own. Thus, except in some very special cases, the second step requires an infinite number of "inner" iterations. Since implementing an infinite number of iterations is impossible
 we have to truncate the inner iteration sequence at some point. In our software we deviate from the strict ALS framework by not minimizing fStress over $x$ for fixed $\delta$,
-but by merely taking a single "inner" iteration and merely decrease fStress. If this is
+but by taking a single "inner" iteration and merely decrease fStress. If this is
 done judiciously we still obtain a convergent sequence of updates. This is similar to the strategy in other
 MDS algorithms such as smacof (@deleeuw_C_77) and alscal (@takane_young_deleeuw_A_77).
 
@@ -290,7 +285,7 @@ $$
 $$
 Unlike in smacof there is no guarantee that $\sigma_f$ decreases from one iteration to the other. Monotone
 convergence of loss function values will only happen if the approximation is good, i.e. if
-$d(x^{(\mu+1)}$ is close to $d_k(x^{(\mu)}$. This requires closer monitoring of convergence than 
+$d(x^{(\mu+1)})$ is close to $d_k(x^{(\mu)})$. This requires closer monitoring of convergence than 
 in smacof. Also note that if $\tilde\delta_k(y)<0$ for all $k$ then $B(y)=0$, which means that the update 
 from $y$ is equal to zero. Again, this eventuality must be monitored.
 
