@@ -8,7 +8,7 @@ smacofSSRStress <- function(theData,
                             ndim = 2,
                             xinit = NULL,
                             ties = 1,
-                            itmax = 1000,
+                            itmax = 10000,
                             eps = 1e-6,
                             rpow = 1.0,
                             digits = 8,
@@ -24,7 +24,7 @@ smacofSSRStress <- function(theData,
   dhat <- theData$delta^rpow
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
-    xold <- smacofTorgerson(theData, ndim)
+    xold <- smacofTorgerson(theData, ndim)$conf
   } 
   sold <- 0.0
   edis <- rep(0, ndat)
@@ -85,6 +85,5 @@ smacofSSRStress <- function(theData,
     ordinal = ordinal,
     ties = h$ties
   )
-  class(result) <- c("smacofSSResult", "smacofSSUOResult")
   return(result)
 }

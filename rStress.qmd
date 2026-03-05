@@ -44,10 +44,13 @@ abstract: TBD
 ```{r loadpackages, echo = FALSE}
 suppressPackageStartupMessages(library(knitr, quietly = TRUE))
 suppressPackageStartupMessages(library(tinytex, quietly = TRUE))
+suppressPackageStartupMessages(library(microbenchmark, quietly = TRUE))
 ```
 
 ```{r load sources, echo = FALSE}
 source("smacofSSRStress.R")
+source("fStress.R")
+source("ekmanData.R")
 ```
 
 \sectionbreak 
@@ -291,25 +294,22 @@ from $y$ is equal to zero. Again, this eventuality must be monitored.
 
 # Software
 
+There are two different major routines in the repository. The R function
+fStress.R does metric MDS minimizing fStress with an arbitrary $f$. The C function
+smacofSSRStress.c does either metric or ordinal MDS minimizing rStress for
+an arabitrary $r$. The C code is compiled into a shared library smacofSSRStress.so, which is loaded by the R front-end smacofSSRStress.R
+that contains smacofSSRStress().
+The function fStress() is meant for exploration and research, while
+smacofSSRStress() is more suitable for production. fStress() is more general, in
+that it allows for more transformations, but smacofSSRStress() is more general
+in that it allows for ordinal MDS.
+
+
 ## Data
 
-The data and weights are in the MDS data format defined in @deleeuw_E_25b. This is
-a list with two scalars nobj and ndat, the number of objects and the number of data
-points (object pairs), and five vectors iind, jind, delta, blocks, weights 
-of length ndat. Vectors iind and jind have integers between 1 and n with
-iind > jind that code for which pairs of objects we have dissimlarity
-information. The dissimilarities are in delta, the weights in weights.
-Dissimilarities are sorted in increasing order and blocks indicates tie-blocks
-in the dissimilarities.
+For fStress.R the input is a matrix delta of dissimilarities. For smacofSSRStress.R the data and weights are in the MDS data format defined in @deleeuw_E_25b. This is a list with two scalars nobj and ndat, the number of objects and the number of data points (object pairs), and five vectors iind, jind, delta, blocks, weights  of length ndat. Vectors iind and jind have integers between 1 and n with iind > jind that code for which pairs of objects we have dissimilarity information. The dissimilarities are in delta, the weights in weights. Dissimilarities are sorted in increasing order and the blocks vectors codes the tie-blocks in the dissimilarities.
 
-In smacofSSRStress.R there is a function smacofSSRStress() which sets up 
-the parameters for a call to smacofSSRStressEngine(), which is coded in
-C and can be found in the shared library smacofSSRStress.so.
 
-The arguments of smacofSSRStress.R are
-```{r theargs, echo = FALSE}
-args(smacofSSRStress)
-```
 
 ## Initial Estimate
 
@@ -335,11 +335,162 @@ where $x$ is the Torgerson-Gower solution. The minimum is attained for
 $$
 \hat\lambda:=\left[\frac{\sum_k w_k\delta_k^rd_k^r(x)}{\sum_kw_kd_k^{2r}(x)}\right]^{1/r}.
 $$
-Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. This scaling is done
-also if xinit is not NULL.
+Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. This scaling is done also if xinit is not NULL.
+
+## Main
+
+The arguments of fStress() are
+```{r theargsf, echo = FALSE}
+args(fStress)
+```
+
+Thus fStress() needs an initial configuration. Parameters $f$ and $g$ are functions that compute the transformation $f$ and its derivative. The file
+fStress.R includes flog, glog, fexp, gexp, and fPower, gPower. Parameter
+$r$ is included in case $f$ and $g$ need additional arguments (as in the case of 
+fPower and gPower). Since all code is in R, it is easy to add additional 
+transformation functions if needed. The output of fStress() is 
+```{r outputf, eval = FALSE}
+list(
+    delta = delta, 
+    dhat = delf, 
+    weightmat = wght,
+    conf = xnew,
+    confdist = dnew,
+    stress = snew,
+    niter = itel
+  )
+```
+
+The arguments of smacofSSRStress() are
+```{r theargsr, echo = FALSE}
+args(smacofSSRStress)
+```
+The C code follows the conventions of the smacof versions in @deleeuw_E_25b. 
+There is only a single parameter $rpow$ for the transformation. The output
+of smacofSSRStress() is
+```{r output, eval = FALSE}
+list(
+    delta = theData$delta,
+    dhat = h$dhat,
+    confdist = h$edis,
+    conf = matrix(h$xnew, nobj, ndim),
+    weightmat = h$wght,
+    stress = h$snew,
+    ndim = ndim,
+    init = xinit,
+    niter = h$itel,
+    nobj = nobj,
+    iind = h$iind,
+    jind = h$jind,
+    weighted = weighted,
+    ordinal = ordinal,
+    ties = h$ties
+  )
+```
+The output list can be fed immediately into the smacof plot routines for the
+configuration plot, the residual plot, the Shepard plot, and the Dist-Dhat
+plot.
 
 
 # Examples
 
+We analyse the colour data from @ekman_54 with different functions $f$, first 
+using fStress(), then using smacofSSRStress().
+
+```{r fstressruns, echo = FALSE, cache = FALSE}
+hl <- fStress(ekmanMatrix, xini = xinit, f = flog, g = glog, verbose = FALSE)
+hp1 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .1, verbose = FALSE)
+hp5 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .5, verbose = FALSE)
+h1 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE)
+h2 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 2, verbose = FALSE)
+h5 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5, verbose = FALSE)
+he <- fStress(ekmanMatrix, xini = xinit, f = fexp, g = gexp, verbose = FALSE)
+```
+
+```{r kableF, echo = FALSE}
+floss <- c(hl$stress, hp1$stress, hp5$stress, h1$stress,h2$stress,h5$stress,he$stress)
+fiter <-  c(hl$niter, hp1$niter, hp5$niter, h1$niter,h2$niter,h5$niter,he$niter)
+x <- matrix(c(fiter, floss), 7, 2)
+r <- c("logarithm", 
+       "power .1",
+       "power .5",
+       "power 1",
+       "power 2", 
+       "power 5",
+       "exponent"
+)
+row.names(x) <- r
+r <- c("niter", "fStress")
+colnames(x) <- r
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "fStress() results Ekman Data")
+```
+```{r rstressruns, echo = FALSE, cache = FALSE}
+chp1 <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE)
+chp5 <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE)
+ch1 <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE)
+ch2 <- smacofSSRStress(ekmanData, rpow = 2, verbose = FALSE)
+ch5 <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE)
+```
+```{r kableR, echo = FALSE}
+rloss <- c(chp1$stress, chp5$stress, ch1$stress,ch2$stress,ch5$stress)
+riter <-  c(chp1$niter, chp5$niter, ch1$niter,ch2$niter,ch5$niter)
+x <- matrix(c(riter, rloss), 5, 2)
+r <- c("power .1",
+       "power .5",
+       "power 1",
+       "power 2", 
+       "power 5"
+)
+row.names(x) <- r
+r <- c("niter", "rStress")
+colnames(x) <- r
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSRStress() results Ekman Data, metric MDS")
+```
+
+We see that for the power transforms the R and C functions arrive at the
+same solution. The number of iterations is not excatly the same, because
+of differences in the initial configuration. With smacofSSRStress() we can also
+do ordinal MDS.
+
+```{r rstressrunsO, echo = FALSE, cache = FALSE}
+chp1o <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE)
+chp5o <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE)
+ch1o <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)
+ch2o <- smacofSSRStress(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)
+ch5o <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)
+```
+
+
+```{r kableRO, echo = FALSE}
+rlosso <- c(chp1o$stress, chp5o$stress, ch1o$stress,ch2o$stress,ch5o$stress)
+ritero <-  c(chp1o$niter, chp5o$niter, ch1o$niter,ch2o$niter,ch5o$niter)
+x <- matrix(c(ritero, rlosso), 5, 2)
+r <- c("power .1",
+       "power .5",
+       "power 1",
+       "power 2", 
+       "power 5"
+)
+row.names(x) <- r
+r <- c("niter", "rStress")
+colnames(x) <- r
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "
+      smacofSSRStress() results Ekman Data, ordinal MDS")
+```
+
+The package microbenchmark (@mersmann_24) can be used to compare the
+R and C versions. For $r=1$ the C version is about four times faster,
+for $r=.1$ and $r=5$ it is about 10 times faster.
+
+```{r timer, echo = FALSE}
+hmicro <- microbenchmark(
+  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE),
+  smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE),
+  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .1, verbose = FALSE),
+  smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE),
+  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5, verbose = FALSE),
+  smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE))
+print(hmicro)
+```
 
 # References

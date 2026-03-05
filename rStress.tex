@@ -67,6 +67,46 @@
 \fi
 \makeatother
 
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
@@ -240,7 +280,7 @@
 
 \title{Minimizing fStress and rStress by Majorizing Gauss-Newton}
 \author{Jan de Leeuw}
-\date{March 4, 2026}
+\date{March 5, 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -523,30 +563,29 @@ monitored.
 
 \section{Software}\label{software}
 
+There are two different major routines in the repository. The R function
+fStress.R does metric MDS minimizing fStress with an arbitrary \(f\).
+The C function smacofSSRStress.c does either metric or ordinal MDS
+minimizing rStress for an arabitrary \(r\). The C code is compiled into
+a shared library smacofSSRStress.so, which is loaded by the R front-end
+smacofSSRStress.R that contains smacofSSRStress(). The function
+fStress() is meant for exploration and research, while smacofSSRStress()
+is more suitable for production. fStress() is more general, in that it
+allows for more transformations, but smacofSSRStress() is more general
+in that it allows for ordinal MDS.
+
 \subsection{Data}\label{data}
 
-The data and weights are in the MDS data format defined in De Leeuw
-(\citeproc{ref-deleeuw_E_25b}{2025}). This is a list with two scalars
-nobj and ndat, the number of objects and the number of data points
-(object pairs), and five vectors iind, jind, delta, blocks, weights of
-length ndat. Vectors iind and jind have integers between 1 and n with
-iind \textgreater{} jind that code for which pairs of objects we have
-dissimlarity information. The dissimilarities are in delta, the weights
-in weights. Dissimilarities are sorted in increasing order and blocks
-indicates tie-blocks in the dissimilarities.
-
-In smacofSSRStress.R there is a function smacofSSRStress() which sets up
-the parameters for a call to smacofSSRStressEngine(), which is coded in
-C and can be found in the shared library smacofSSRStress.so.
-
-The arguments of smacofSSRStress.R are
-
-\begin{verbatim}
-function (theData, ndim = 2, xinit = NULL, ties = 1, itmax = 1000, 
-    eps = 1e-06, rpow = 1, digits = 8, width = 10, verbose = TRUE, 
-    weighted = FALSE, ordinal = FALSE) 
-NULL
-\end{verbatim}
+For fStress.R the input is a matrix delta of dissimilarities. For
+smacofSSRStress.R the data and weights are in the MDS data format
+defined in De Leeuw (\citeproc{ref-deleeuw_E_25b}{2025}). This is a list
+with two scalars nobj and ndat, the number of objects and the number of
+data points (object pairs), and five vectors iind, jind, delta, blocks,
+weights of length ndat. Vectors iind and jind have integers between 1
+and n with iind \textgreater{} jind that code for which pairs of objects
+we have dissimilarity information. The dissimilarities are in delta, the
+weights in weights. Dissimilarities are sorted in increasing order and
+the blocks vectors codes the tie-blocks in the dissimilarities.
 
 \subsection{Initial Estimate}\label{initial-estimate}
 
@@ -575,7 +614,176 @@ for \[
 \] Our initial estimate is \(\hat\lambda x\) with distances
 \(\hat\lambda d_k(x)\). This scaling is done also if xinit is not NULL.
 
+\subsection{Main}\label{main}
+
+The arguments of fStress() are
+
+\begin{verbatim}
+function (delta, xini, wght = 1 - diag(nrow(xini)), f = fPower, 
+    g = gPower, r = 1, itmax = 10000, eps = 1e-06, verbose = TRUE) 
+NULL
+\end{verbatim}
+
+Thus fStress() needs an initial configuration. Parameters \(f\) and
+\(g\) are functions that compute the transformation \(f\) and its
+derivative. The file fStress.R includes flog, glog, fexp, gexp, and
+fPower, gPower. Parameter \(r\) is included in case \(f\) and \(g\) need
+additional arguments (as in the case of fPower and gPower). Since all
+code is in R, it is easy to add additional transformation functions if
+needed. The output of fStress() is
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{list}\NormalTok{(}
+    \AttributeTok{delta =}\NormalTok{ delta, }
+    \AttributeTok{dhat =}\NormalTok{ delf, }
+    \AttributeTok{weightmat =}\NormalTok{ wght,}
+    \AttributeTok{conf =}\NormalTok{ xnew,}
+    \AttributeTok{confdist =}\NormalTok{ dnew,}
+    \AttributeTok{stress =}\NormalTok{ snew,}
+    \AttributeTok{niter =}\NormalTok{ itel}
+\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+The arguments of smacofSSRStress() are
+
+\begin{verbatim}
+function (theData, ndim = 2, xinit = NULL, ties = 1, itmax = 10000, 
+    eps = 1e-06, rpow = 1, digits = 8, width = 10, verbose = TRUE, 
+    weighted = FALSE, ordinal = FALSE) 
+NULL
+\end{verbatim}
+
+The C code follows the conventions of the smacof versions in De Leeuw
+(\citeproc{ref-deleeuw_E_25b}{2025}). There is only a single parameter
+\(rpow\) for the transformation. The output of smacofSSRStress() is
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{list}\NormalTok{(}
+    \AttributeTok{delta =}\NormalTok{ theData}\SpecialCharTok{$}\NormalTok{delta,}
+    \AttributeTok{dhat =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{dhat,}
+    \AttributeTok{confdist =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{edis,}
+    \AttributeTok{conf =} \FunctionTok{matrix}\NormalTok{(h}\SpecialCharTok{$}\NormalTok{xnew, nobj, ndim),}
+    \AttributeTok{weightmat =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{wght,}
+    \AttributeTok{stress =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{snew,}
+    \AttributeTok{ndim =}\NormalTok{ ndim,}
+    \AttributeTok{init =}\NormalTok{ xinit,}
+    \AttributeTok{niter =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{itel,}
+    \AttributeTok{nobj =}\NormalTok{ nobj,}
+    \AttributeTok{iind =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{iind,}
+    \AttributeTok{jind =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{jind,}
+    \AttributeTok{weighted =}\NormalTok{ weighted,}
+    \AttributeTok{ordinal =}\NormalTok{ ordinal,}
+    \AttributeTok{ties =}\NormalTok{ h}\SpecialCharTok{$}\NormalTok{ties}
+\NormalTok{  )}
+\end{Highlighting}
+\end{Shaded}
+
+The output list can be fed immediately into the smacof plot routines for
+the configuration plot, the residual plot, the Shepard plot, and the
+Dist-Dhat plot.
+
 \section{Examples}\label{examples}
+
+We analyse the colour data from Ekman (\citeproc{ref-ekman_54}{1954})
+with different functions \(f\), first using fStress(), then using
+smacofSSRStress().
+
+\begin{longtable}[]{@{}lcc@{}}
+\caption{fStress() results Ekman Data}\tabularnewline
+\toprule\noalign{}
+& niter & fStress \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+& niter & fStress \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+logarithm & 555 & 0.0872002 \\
+power .1 & 805 & 0.0002733 \\
+power .5 & 219 & 0.0059543 \\
+power 1 & 35 & 0.0172132 \\
+power 2 & 45 & 0.0328807 \\
+power 5 & 775 & 0.0203153 \\
+exponent & 34 & 0.0085331 \\
+\end{longtable}
+
+\begin{longtable}[]{@{}lcc@{}}
+\caption{smacofSSRStress() results Ekman Data, metric
+MDS}\tabularnewline
+\toprule\noalign{}
+& niter & rStress \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+& niter & rStress \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+power .1 & 856 & 0.0002733 \\
+power .5 & 229 & 0.0059543 \\
+power 1 & 35 & 0.0172132 \\
+power 2 & 46 & 0.0328807 \\
+power 5 & 841 & 0.0203153 \\
+\end{longtable}
+
+We see that for the power transforms the R and C functions arrive at the
+same solution. The number of iterations is not excatly the same, because
+of differences in the initial configuration. With smacofSSRStress() we
+can also do ordinal MDS.
+
+\begin{longtable}[]{@{}lcc@{}}
+\caption{smacofSSRStress() results Ekman Data, ordinal
+MDS}\tabularnewline
+\toprule\noalign{}
+& niter & rStress \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+& niter & rStress \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+power .1 & 876 & 0.0000066 \\
+power .5 & 251 & 0.0001651 \\
+power 1 & 134 & 0.0005337 \\
+power 2 & 209 & 0.0009015 \\
+power 5 & 2443 & 0.0011002 \\
+\end{longtable}
+
+The package microbenchmark (Mersmann (\citeproc{ref-mersmann_24}{2024}))
+can be used to compare the R and C versions. For \(r=1\) the C version
+is about four times faster, for \(r=.1\) and \(r=5\) it is about 10
+times faster.
+
+\begin{verbatim}
+Warning in microbenchmark(fStress(ekmanMatrix, xini = xinit, f = fPower, : less
+accurate nanosecond times to avoid potential integer overflows
+\end{verbatim}
+
+\begin{verbatim}
+Unit: microseconds
+                                                                                      expr
+   fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1,      verbose = FALSE)
+                                     smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE)
+ fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 0.1,      verbose = FALSE)
+                                   smacofSSRStress(ekmanData, rpow = 0.1, verbose = FALSE)
+   fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5,      verbose = FALSE)
+                                     smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE)
+       min        lq      mean    median        uq       max neval cld
+  1336.641  1429.445  1731.335  1470.588  1518.722  5500.847   100 a  
+   363.875   389.377   439.438   412.419   484.743   723.199   100 a  
+ 33871.412 37650.772 45543.970 38470.259 39949.887 83167.475   100  b 
+  3383.894  3611.997  3654.865  3653.530  3702.013  3955.844   100 a  
+ 32197.628 35727.543 39952.617 36587.826 37245.897 80553.807   100   c
+  3288.323  3471.900  3525.207  3510.092  3582.129  3783.029   100 a  
+\end{verbatim}
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
@@ -619,6 +827,10 @@ Using Majorization: SMACOF in R}.''} \emph{Journal of Statistical
 Software} 31 (3): 1--30.
 \url{https://www.jstatsoft.org/article/view/v031i03}.
 
+\bibitem[\citeproctext]{ref-ekman_54}
+Ekman, Gosta. 1954. {``{Dimensions of Color Vision}.''} \emph{Journal of
+Psychology} 38: 467--74.
+
 \bibitem[\citeproctext]{ref-groenen_deleeuw_mathar_C_95}
 Groenen, Patrick J. F., Jan De Leeuw, and Rudolf Mathar. 1995. {``{Least
 Squares Multidimensional Scaling with Transformed Distances}.''} In
@@ -646,6 +858,10 @@ Mair, Patrick, Patrick J. F. Groenen, and Jan De Leeuw. 2022. {``{More
 on Multidimensional Scaling in R: smacof Version 2}.''} \emph{Journal of
 Statistical Software} 102 (10): 1--47.
 \url{https://www.jstatsoft.org/article/view/v102i10}.
+
+\bibitem[\citeproctext]{ref-mersmann_24}
+Mersmann, Olaf. 2024. \emph{{microbenchmark: Accurate Timing
+Functions}}. \url{https://CRAN.R-project.org/package=microbenchmark}.
 
 \bibitem[\citeproctext]{ref-qiu_mei_24}
 Qiu, Yixuan, and Jiali Mei. 2024. \emph{{RSpectra: Solvers for
