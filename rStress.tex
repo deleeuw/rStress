@@ -280,7 +280,7 @@
 
 \title{Minimizing fStress and rStress by Majorizing Gauss-Newton}
 \author{Jan de Leeuw}
-\date{March 5, 2026}
+\date{March 7, 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -776,14 +776,256 @@ Unit: microseconds
                                    smacofSSRStress(ekmanData, rpow = 0.1, verbose = FALSE)
    fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5,      verbose = FALSE)
                                      smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE)
-       min        lq      mean    median        uq       max neval cld
-  1336.641  1429.445  1731.335  1470.588  1518.722  5500.847   100 a  
-   363.875   389.377   439.438   412.419   484.743   723.199   100 a  
- 33871.412 37650.772 45543.970 38470.259 39949.887 83167.475   100  b 
-  3383.894  3611.997  3654.865  3653.530  3702.013  3955.844   100 a  
- 32197.628 35727.543 39952.617 36587.826 37245.897 80553.807   100   c
-  3288.323  3471.900  3525.207  3510.092  3582.129  3783.029   100 a  
+       min        lq       mean     median        uq       max neval cld
+  1368.006  1470.280  1782.5049  1522.4735  1563.925  5717.450   100  a 
+   381.464   395.363   441.3892   412.5625   486.752   607.702   100  a 
+ 33755.013 37817.908 43840.4107 38643.0125 39699.993 83263.620   100   b
+  3379.343  3630.325  3670.5963  3684.0140  3720.771  3818.494   100  a 
+ 32748.258 36561.217 45443.7825 37440.7900 39205.676 82820.287   100   b
+  3351.299  3514.889  3550.7976  3549.0420  3588.300  3670.361   100  a 
 \end{verbatim}
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp1c-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Metric, r = .1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp1s-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Metric, r = .1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp5c-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Metric, r = .5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp5s-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Metric, r = .5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch1c-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Metric, r = 1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch1s-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Metric, r = 1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch2c-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Metric, r = 2}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch2s-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Metric, r = 2}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch5c-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Metric, r = 5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch5s-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Metric, r = 5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp1oc-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Non-metric, r = .1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp1os-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Non-metric, r = .1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp5oc-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Non-metric, r = .5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/chp5os-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Non-metric, r = .5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch1oc-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Non-metric, r = 1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch1os-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Non-metric, r = 1}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch2oc-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Non-metric, r = 2}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch2os-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Non-metric, r = 2}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch5oc-1.pdf}}
+
+}
+
+\caption{Configuration Plot, Non-metric, r = 5}
+
+\end{figure}%
+
+\sectionbreak
+
+\begin{figure}[H]
+
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{rStress_files/figure-pdf/ch5os-1.pdf}}
+
+}
+
+\caption{Shepard Plot, Non-metric, r = 5}
+
+\end{figure}%
+
+\sectionbreak
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}

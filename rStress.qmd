@@ -49,6 +49,7 @@ suppressPackageStartupMessages(library(microbenchmark, quietly = TRUE))
 
 ```{r load sources, echo = FALSE}
 source("smacofSSRStress.R")
+source("smacofPlots.R")
 source("fStress.R")
 source("ekmanData.R")
 ```
@@ -482,7 +483,7 @@ The package microbenchmark (@mersmann_24) can be used to compare the
 R and C versions. For $r=1$ the C version is about four times faster,
 for $r=.1$ and $r=5$ it is about 10 times faster.
 
-```{r timer, echo = FALSE}
+```{r timer, echo = FALSE, cache = TRUE}
 hmicro <- microbenchmark(
   fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE),
   smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE),
@@ -492,5 +493,100 @@ hmicro <- microbenchmark(
   smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE))
 print(hmicro)
 ```
+\sectionbreak
+```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main =""}
+par(pty="s")
+smacofConfigurationPlot(chp1, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .1", main = ""}
+smacofShepardPlot(chp1, rpow = .1, cex = 2)
+```
+\sectionbreak
+```{r chp5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .5", main =""}
+par(pty="s")
+smacofConfigurationPlot(chp5, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .5", main = ""}
+smacofShepardPlot(chp5, rpow = .5, cex = 2)
+```
+\sectionbreak
+```{r ch1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 1", main =""}
+par(pty="s")
+smacofConfigurationPlot(ch1, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 1", main = ""}
+smacofShepardPlot(ch1, rpow = 1, cex = 2)
+```
+\sectionbreak
+```{r ch2c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 2", main =""}
+par(pty="s")
+smacofConfigurationPlot(ch2, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch2s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 2", main = ""}
+smacofShepardPlot(ch2, rpow = 2, cex = 2)
+```
+\sectionbreak
+```{r ch5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 5", main =""}
+par(pty = "s")
+smacofConfigurationPlot(ch5, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 5", main = ""}
+smacofShepardPlot(ch5, rpow = 5, cex = 2)
+```
+
+\sectionbreak
+```{r chp1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .1", main =""}
+par(pty="s")
+smacofConfigurationPlot(chp1o, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .1", main = ""}
+smacofShepardPlot(chp1o, rpow = 2, cex = 2)
+```
+\sectionbreak
+```{r chp5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .5", main =""}
+par(pty="s")
+smacofConfigurationPlot(chp5o, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .5", main = ""}
+smacofShepardPlot(chp5o, rpow = .5, cex = 2)
+```
+\sectionbreak
+```{r ch1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 1", main =""}
+par(pty = "s")
+smacofConfigurationPlot(ch1o, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 1", main = ""}
+smacofShepardPlot(ch1o, rpow = 1, cex = 2)
+```
+\sectionbreak
+```{r ch2oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 2", main =""}
+par(pty = "s")
+smacofConfigurationPlot(ch2o, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch2os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 2", main = ""}
+smacofShepardPlot(ch2o, rpow = 2, cex = 2)
+```
+\sectionbreak
+```{r ch5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 5", main =""}
+par(pty = "s")
+smacofConfigurationPlot(ch5o, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = ""}
+smacofShepardPlot(ch5o, rpow = 5, cex = 2)
+```
+
+
+
+\sectionbreak
 
 # References

@@ -53,8 +53,8 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                      fmin(fabs(xold[i] - xnew[i]), fabs(xold[i] + xnew[i])));
         }
         if (*verbose) {
-            if (*ordinal) {
                 printf(
+            if (*ordinal) {
                     "itel %4d sold %*.*f told %*.*f tnew %*.*f smid %*.*f snew "
                     "%*.*f ops %*.*f\n",
                     *itel, *width, *digits, *sold, *width, *digits, told,
