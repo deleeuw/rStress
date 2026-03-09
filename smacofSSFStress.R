@@ -1,4 +1,4 @@
-dyn.load("smacofSSRStress.so")
+dyn.load("smacofSSFStress.so")
 
 source("smacofDataUtilities.R")
 source("smacofPlots.R")

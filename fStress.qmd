@@ -50,7 +50,7 @@ suppressPackageStartupMessages(library(microbenchmark, quietly = TRUE))
 ```{r load sources, echo = FALSE}
 source("smacofSSFStress.R")
 source("smacofPlots.R")
-source("fStress.R")
+source("smacofSSFStressR.R")
 source("ekmanData.R")
 ```
 
@@ -341,7 +341,7 @@ Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. Thi
 ## Main
 
 The arguments of fStress() are
-```{r theargsf, echo = FALSE}
+```{r theargsf, echo = FALSE, eval = FALSE}
 args(fStress)
 ```
 
@@ -398,7 +398,7 @@ plot.
 We analyse the colour data from @ekman_54 with different functions $f$, first 
 using fStress(), then using smacofSSRStress().
 
-```{r fstressruns, echo = FALSE, cache = FALSE}
+```{r fstressruns, echo = FALSE, cache = FALSE, eval = FALSE}
 hl <- fStress(ekmanData, f = flog, g = glog, verbose = FALSE)
 hp1 <- fStress(ekmanData, f = fPower, g = gPower, r = .1, verbose = FALSE)
 hp5 <- fStress(ekmanData, f = fPower, g = gPower, r = .5, verbose = FALSE)
@@ -408,7 +408,7 @@ h5 <- fStress(ekmanData, f = fPower, g = gPower, r = 5, verbose = FALSE)
 he <- fStress(ekmanData, f = fexp, g = gexp, verbose = FALSE)
 ```
 
-```{r kableF, echo = FALSE}
+```{r kableF, echo = FALSE, eval = FALSE}
 floss <- c(hl$stress, hp1$stress, hp5$stress, h1$stress,h2$stress,h5$stress,he$stress)
 fiter <-  c(hl$niter, hp1$niter, hp5$niter, h1$niter,h2$niter,h5$niter,he$niter)
 x <- matrix(c(fiter, floss), 7, 2)
@@ -483,7 +483,7 @@ The package microbenchmark (@mersmann_24) can be used to compare the
 R and C versions. For $r=1$ the C version is about four times faster,
 for $r=.1$ and $r=5$ it is about 10 times faster.
 
-```{r timer, echo = FALSE, cache = TRUE}
+```{r timer, echo = FALSE, cache = TRUE, eval = FALSE}
 hmicro <- microbenchmark(
   fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE),
   smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE),
@@ -499,7 +499,7 @@ par(pty="s")
 smacofConfigurationPlot(chp1, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .1", main = ""}
+```{r chp1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .1", main = "", eval = FALSE}
 smacofShepardPlot(chp1, rpow = .1, cex = 2)
 ```
 \sectionbreak

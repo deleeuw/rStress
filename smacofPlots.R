@@ -6,7 +6,7 @@ smacofShepardPlot <-
            colline = "RED",
            colpoint = "BLUE",
            resolution = 100,
-           f = fPower,
+           what = 0,
            rpow = 1,
            lwd = 2,
            cex = 1,
