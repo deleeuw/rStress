@@ -399,13 +399,13 @@ We analyse the colour data from @ekman_54 with different functions $f$, first
 using fStress(), then using smacofSSRStress().
 
 ```{r fstressruns, echo = FALSE, cache = FALSE}
-hl <- fStress(ekmanMatrix, xini = xinit, f = flog, g = glog, verbose = FALSE)
-hp1 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .1, verbose = FALSE)
-hp5 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .5, verbose = FALSE)
-h1 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE)
-h2 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 2, verbose = FALSE)
-h5 <- fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5, verbose = FALSE)
-he <- fStress(ekmanMatrix, xini = xinit, f = fexp, g = gexp, verbose = FALSE)
+hl <- fStress(ekmanData, f = flog, g = glog, verbose = FALSE)
+hp1 <- fStress(ekmanData, f = fPower, g = gPower, r = .1, verbose = FALSE)
+hp5 <- fStress(ekmanData, f = fPower, g = gPower, r = .5, verbose = FALSE)
+h1 <- fStress(ekmanData, f = fPower, g = gPower, r = 1, verbose = FALSE)
+h2 <- fStress(ekmanData, f = fPower, g = gPower, r = 2, verbose = FALSE)
+h5 <- fStress(ekmanData, f = fPower, g = gPower, r = 5, verbose = FALSE)
+he <- fStress(ekmanData, f = fexp, g = gexp, verbose = FALSE)
 ```
 
 ```{r kableF, echo = FALSE}

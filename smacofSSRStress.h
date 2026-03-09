@@ -25,6 +25,8 @@ void monotone(const int *, double *, double *);
 int myComp(const void *, const void *);
 void mySort(double *, double *, double *, int *, int *, const int *);
 
+void smacofSSRStressFList(double *x, double *f, double *g, int *what, int *nvec);
+
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv);
 
@@ -34,7 +36,7 @@ double smacofSSRStressLoss(int* ndat, double* edis, double* dhat,
 void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, int* weighted,
-                           double* sold, double* snew, double* eps, double *rpow,
+                           double* sold, double* snew, double* eps, int *what,
                            int* iind, int* jind, int* blks, double* wght, 
                            double* edis, double* dhat, double* xold, double* xnew);
 

@@ -10,7 +10,7 @@ smacofSSRStress <- function(theData,
                             ties = 1,
                             itmax = 10000,
                             eps = 1e-6,
-                            rpow = 1.0,
+                            what = 20,
                             digits = 8,
                             width = 10,
                             verbose = TRUE,
@@ -20,25 +20,35 @@ smacofSSRStress <- function(theData,
   ndat <- theData$ndat
   iind <- theData$iind
   jind <- theData$jind
+  blks <- theData$blocks
   wght <- theData$weights / sum(theData$weights)
-  dhat <- theData$delta^rpow
+  if (what > 10) {
+    rpow <- (what - 10) / 10
+    func <- function(x, r) x ^ r
+  }
+  if (what == 1) {
+    rpow <- 1
+    func <- function(x, r) log(x)
+  }
+  if (what == 2) {
+    rpow <- 1
+    func <- function(x, r) exp(x)
+  }
+  dhat <- func(theData$delta, rpow)
   dhat <- dhat / sqrt(sum(wght * dhat^2))
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
   } 
   sold <- 0.0
   edis <- rep(0, ndat)
-  dhat <- theData$delta^rpow
-  dhat <- dhat / sqrt(sum(wght * dhat^2))
   for (k in 1:ndat) {
     i <- iind[k]
     j <- jind[k]
     edis[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
-    sold <- sold + (dhat[k] - edis[k]^rpow)^2
+    sold <- sold + wght[k] * (dhat[k] - func(edis[k], rpow))^2
   }
   # scale
   itel <- 1
-  blks <- theData$blocks
   snew <- 0.0
   xold <- as.vector(xold)
   xnew <- xold
@@ -58,7 +68,7 @@ smacofSSRStress <- function(theData,
     sold = as.double(sold),
     snew = as.double(snew),
     eps = as.double(eps),
-    rpow = as.double(rpow),
+    what = as.integer(what),
     iind = as.integer(iind - 1),
     jind = as.integer(jind - 1),
     blks = as.integer(blks),

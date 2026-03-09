@@ -6,21 +6,24 @@ smacofShepardPlot <-
            colline = "RED",
            colpoint = "BLUE",
            resolution = 100,
-           rpow = 1, 
+           f = fPower,
+           rpow = 1,
            lwd = 2,
            cex = 1,
            pch = 16) {
-    maxDelta <- max((h$delta)^rpow)
-    minDelta <- min((h$delta)^rpow)
-    x <- (h$delta)^rpow
+    del <- h$delta
+    dis <- h$confdist
+    maxDelta <- max(f(del, rpow))
+    minDelta <- min(f(del, rpow))
+    x <- f(del, rpow)
     y <- h$dhat
-    z <- (h$confdist)^rpow
+    z <- f(dis, rpow)
     plot(
       rbind(cbind(x, z), cbind(x, y)),
       xlim = c(minDelta, maxDelta),
-      ylim = c(min(c((h$confdist)^rpow, h$dhat)), max(c((h$confdist)^rpow, h$dhat))),
-      xlab = "delta^r",
-      ylab = "dhat and dist^r",
+      ylim = c(min(c(z, y)), max(c(z, y))),
+      xlab = "f(delta)",
+      ylab = "dhat and f(dist)",
       main = main,
       type = "n"
     )
