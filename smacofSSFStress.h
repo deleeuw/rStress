@@ -1,5 +1,5 @@
-#ifndef SMACOF_SS_RSTRESS_H
-#define SMACOF_SS_RSTRESS_H
+#ifndef SMACOF_SS_FSTRESS_H
+#define SMACOF_SS_FSTRESS_H
 
 #include <limits.h>
 #include <math.h>
@@ -25,26 +25,23 @@ void monotone(const int *, double *, double *);
 int myComp(const void *, const void *);
 void mySort(double *, double *, double *, int *, int *, const int *);
 
-void smacofSSRStressFList(double *x, double *f, double *g, int *what, int *nvec);
+void smacofSSFStressFList(double *x, double *f, double *g, int *what, double* rpow, int *nvec);
 
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv);
 
-double smacofSSRStressLoss(int* ndat, double* edis, double* dhat,
-                           double* wght, double *rpow);
-
-void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
+void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, int* weighted,
                            double* sold, double* snew, double* eps, int *what,
-                           int* iind, int* jind, int* blks, double* wght, 
+                           double* rpow, int* iind, int* jind, int* blks, double* wght, 
                            double* edis, double* dhat, double* xold, double* xnew);
 
-void smacofSSRStressMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
+void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
                       int* jind, int* weighted, double* wght, double* vinv, double* edis,
                       double* dhat, double* xold, double* xnew);
 
-void smacofSSRStressMonotone(int* ndat, int* ties, double* snew,
+void smacofSSFStressMonotone(int* ndat, int* ties, double* snew,
                        int* iind, int* jind, int* blks, double* edis,
                        double* dhat, double* wght);
 
@@ -108,4 +105,4 @@ static inline void *xrealloc(void *ptr, const size_t size) {
     }                                                                          \
   }
 
-#endif /* SMACOF_SS_RSTRESS_H */
+#endif /* SMACOF_SS_FSTRESS_H */

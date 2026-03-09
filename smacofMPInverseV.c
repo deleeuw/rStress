@@ -1,4 +1,4 @@
-#include "smacofSSRStress.h"
+#include "smacofSSFStress.h"
 
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv) {

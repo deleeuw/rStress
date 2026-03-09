@@ -1,5 +1,5 @@
 ---
-title: Minimizing fStress and rStress by Majorizing Gauss-Newton
+title: Minimizing fStress by Majorizing Gauss-Newton
 author: 
     - name: Jan de Leeuw
       orcid: 0000-0003-1420-1797
@@ -48,7 +48,7 @@ suppressPackageStartupMessages(library(microbenchmark, quietly = TRUE))
 ```
 
 ```{r load sources, echo = FALSE}
-source("smacofSSRStress.R")
+source("smacofSSFStress.R")
 source("smacofPlots.R")
 source("fStress.R")
 source("ekmanData.R")
@@ -71,7 +71,7 @@ The Multidimensional Scaling (MDS) loss function fStress is defined as
 \sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
 with $f$ increasing and differentiable in the open interval $(0,+\infty)$. 
-In \eqref{eq-fdef} the $w_k$ are positive *weights*, the $\delta_k$ are 
+In \eqref{eq-fdef} the $w_k$ are positive *weights*, and the $\delta_k$ are 
 known *dissimilarities*. The vector $x$ has the coordinates of $n$
 points in $\mathbb{R}^p$, and the $d_k(x)$ are Euclidean *distances* between pairs 
 of these points. For each $k$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$

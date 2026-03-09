@@ -1,6 +1,6 @@
-#include "smacofSSRStress.h"
+#include "smacofSSFStress.h"
 
-void smacofSSRStressMonotone(int* ndat, int* ties, double* snew, int* iind,
+void smacofSSFStressMonotone(int* ndat, int* ties, double* snew, int* iind,
                              int* jind, int* blks, double* edis, double* dhat,
                              double* wght) {
     if (*ties == 1) {

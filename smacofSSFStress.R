@@ -10,7 +10,8 @@ smacofSSRStress <- function(theData,
                             ties = 1,
                             itmax = 10000,
                             eps = 1e-6,
-                            what = 20,
+                            what = 0,
+                            rpow = 1,
                             digits = 8,
                             width = 10,
                             verbose = TRUE,
@@ -22,16 +23,13 @@ smacofSSRStress <- function(theData,
   jind <- theData$jind
   blks <- theData$blocks
   wght <- theData$weights / sum(theData$weights)
-  if (what > 10) {
-    rpow <- (what - 10) / 10
+  if (what == 0) {
     func <- function(x, r) x ^ r
   }
   if (what == 1) {
-    rpow <- 1
     func <- function(x, r) log(x)
   }
   if (what == 2) {
-    rpow <- 1
     func <- function(x, r) exp(x)
   }
   dhat <- func(theData$delta, rpow)
@@ -69,6 +67,7 @@ smacofSSRStress <- function(theData,
     snew = as.double(snew),
     eps = as.double(eps),
     what = as.integer(what),
+    rpow = as.double(rpow),
     iind = as.integer(iind - 1),
     jind = as.integer(jind - 1),
     blks = as.integer(blks),

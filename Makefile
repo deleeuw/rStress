@@ -1,12 +1,12 @@
 
 SSRC = smacofIsotone.c smacofMPInverseV.c smacofSort.c \
-	smacofSSRStressEngine.c smacofSSRStressMajorize.c smacofSSRStressMonotone.c
+	smacofSSFStressEngine.c smacofSSFStressMajorize.c smacofSSFStressMonotone.c
 
-%.o: %.c smacofSSRStress.h
+%.o: %.c smacofSSFStress.h
 	clang -c $@
 
-shlib: smacofSSRStress.h $(SSRC)
-	R CMD SHLIB -o smacofSSRStress.so $(SSRC)
+shlib: smacofSSFStress.h $(SSRC)
+	R CMD SHLIB -o smacofSSFStress.so $(SSRC)
 
 clean:
 	rm -f *.o

@@ -1,6 +1,6 @@
-#include "smacofSSRStress.h"
+#include "smacofSSFStress.h"
 
-void smacofSSRStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
+void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
                              int* iind, int* jind, int* weighted, double* wght,
                              double* vinv, double* edis, double* dhat,
                              double* xold, double* xnew) {

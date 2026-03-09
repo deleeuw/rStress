@@ -1,10 +1,10 @@
-#include "smacofSSRStress.h"
+#include "smacofSSFStress.h"
 
 void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, int* weighted,
                            double* sold, double* snew, double* eps, int* what,
-                           int* iind, int* jind, int* blks, double* wght,
+                           double* rpow, int* iind, int* jind, int* blks, double* wght,
                            double* edis, double* dhat, double* xold,
                            double* xnew) {
     int Ndat = *ndat, Nobj = *nobj, Ndim = *ndim;
@@ -16,14 +16,14 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
     double* vinv = xmalloc(Nobj * (Nobj - 1) * sizeof(double) / 2);
     while (true) {
         double told = 0.0;
-        (void)smacofSSRStressFList(edis, fval, gval, what, ndat);
+        (void)smacofSSFStressFList(edis, fval, gval, what, rpow, ndat);
         for (int k = 0; k < Ndat; k++) {
             waux[k] = wght[k] * SQUARE(gval[k]);
             daux[k] = (dhat[k] - fval[k]) / gval[k] + edis[k];
             told += waux[k] * SQUARE(daux[k] - edis[k]);
         }
         (void)smacofMPInverseV(nobj, ndat, iind, jind, waux, vinv);
-        (void)smacofSSRStressMajorize(nobj, ndim, ndat, snew, iind, jind,
+        (void)smacofSSFStressMajorize(nobj, ndim, ndat, snew, iind, jind,
                                       weighted, waux, vinv, edis, daux, xold,
                                       xnew);
         double tnew = 0.0, smid = 0.0;
@@ -32,11 +32,11 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
             smid += wght[k] * SQUARE(dhat[k] - edis[k]);
         }
         if (*ordinal) {
-            (void)smacofSSRStressFList(edis, fval, gval, what, ndat);
+            (void)smacofSSFStressFList(edis, fval, gval, what, rpow, ndat);
             for (int k = 0; k < Ndat; k++) {
                 dhat[k] = fval[k];
             }
-            (void)smacofSSRStressMonotone(ndat, ties, snew, iind, jind, blks,
+            (void)smacofSSFStressMonotone(ndat, ties, snew, iind, jind, blks,
                                           edis, dhat, wght);
             double sum = 0.0;
             for (int k = 0; k < Ndat; k++) {
@@ -92,15 +92,6 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
     return;
 }
 
-double smacofSSRStressLoss(int* ndat, double* edis, double* dhat, double* wght,
-                           double* rpow) {
-    double loss = 0.0;
-    for (int k = 0; k < *ndat; k++) {
-        loss += wght[k] * SQUARE(dhat[k] - pow(edis[k], *rpow));
-    }
-    return loss;
-}
-
 void smacofSSSMatrixPrint(double* mat, int* nobj, int* ndat, int* iind,
                           int* jind, int* width, int* digits) {
     int Nobj = *nobj, Ndat = *ndat;
@@ -120,25 +111,26 @@ void smacofSSSMatrixPrint(double* mat, int* nobj, int* ndat, int* iind,
     return;
 }
 
-void smacofSSRStressFList(double* x, double* f, double* g, int* what,
+void smacofSSFStressFList(double* x, double* f, double* g, int* what, double* rpow,
                           int* nvec) {
-    if (*what >= 10) {
-        double dpow = (double)(*what - 10.0) / 10.0;
-        for (size_t i = 0; i < *nvec; i++) {
-            f[i] = pow(x[i], dpow);
-            g[i] = dpow * pow(x[i], dpow - 1.0);
+    double Rpow = *rpow;
+    int Nvec = *nvec, What = *what;
+    if (What == 0) {
+        for (size_t i = 0; i < Nvec; i++) {
+            f[i] = pow(x[i], Rpow);
+            g[i] = Rpow * pow(x[i], Rpow - 1.0);
         }
         return;
     }
-    if (*what == 1) {
-        for (size_t i = 0; i < *nvec; i++) {
+    if (What == 1) {
+        for (size_t i = 0; i < Nvec; i++) {
             f[i] = log(x[i]);
             g[i] = 1.0 / x[i];
         }
         return;
     }
-    if (*what == 2) {
-        for (size_t i = 0; i < *nvec; i++) {
+    if (What == 2) {
+        for (size_t i = 0; i < Nvec; i++) {
             f[i] = g[i] = exp(x[i]);
         }
         return;
