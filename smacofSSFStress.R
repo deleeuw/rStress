@@ -4,7 +4,7 @@ source("smacofDataUtilities.R")
 source("smacofPlots.R")
 source("smacofTorgerson.R")
 
-smacofSSRStress <- function(theData,
+smacofSSFStress <- function(theData,
                             ndim = 2,
                             xinit = NULL,
                             ties = 1,

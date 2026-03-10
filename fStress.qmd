@@ -265,19 +265,22 @@ Define the matrices
 \begin{align}
 V(y)&:=\sum_{k=1}^K\tilde w_k(y)A_k,\\
 B(y)&:=\sum_{\tilde\delta_k(y)>0}\tilde w_k\frac{\tilde\delta_k(y)}{d_k(y)}A_k,\\
-H(y)&:=\sum_{\tilde\delta_k(y)<0}\tilde w_k\frac{\tilde\delta_k(y)}{d_k(y)}A_k.
+H(y)&:=\sum_{\tilde\delta_k(y)<0}\tilde w_k\frac{|\tilde\delta_k(y)|}{d_k(y)}A_k.
 \end{align}
 \end{subequations}
-Note that all three matrices (more preecisely matrix-valued functions) are positive semi-definite.
-We can use these matrices for a majorization of $\omega_f(x;y)$ at $y$ is
+Note that all three matrices (more precisely matrix-valued functions) are positive semi-definite.
+Now, using these matrices and the inequalities \eqref{eq-cs} and \eqref{eq-amgm},
 \begin{equation}
-\omega_f(x;y)=C+\frac12 x'(V(y)+H(y))x-x'B(y)x\leq\kappa_f(x;y),\label{eq-matmajx}
+\omega_f(x,y)\leq\kappa(x,y):=\gamma(y)+x'(V(y)+H(y))x-2x'B(y)y,
+\label{eq-matmajx}
 \end{equation}
 with
 \begin{equation}
-\kappa_f(x;y):=C+\frac12 x'(V(y)+H(y))x-x'B(y)y,\label{eq-matmajy}
+\gamma(y):=\sum_{k=1}^K\tilde w_k(y)\tilde\delta_k^2(y)+y'H(y)y
 \end{equation}
-where $C$ is a constant that depends on $y$ but not on $x$.
+which does not depend on $x$.
+
+
 
 We now update using
 $$
@@ -363,7 +366,7 @@ list(
 ```
 
 The arguments of smacofSSRStress() are
-```{r theargsr, echo = FALSE}
+```{r theargsr, echo = FALSE, eval = FALSE}
 args(smacofSSRStress)
 ```
 The C code follows the conventions of the smacof versions in @deleeuw_E_25b. 
@@ -425,14 +428,14 @@ r <- c("niter", "fStress")
 colnames(x) <- r
 kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "fStress() results Ekman Data")
 ```
-```{r rstressruns, echo = FALSE, cache = FALSE}
+```{r rstressruns, echo = FALSE, cache = FALSE, eval = FALSE}
 chp1 <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE)
 chp5 <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE)
 ch1 <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE)
 ch2 <- smacofSSRStress(ekmanData, rpow = 2, verbose = FALSE)
 ch5 <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE)
 ```
-```{r kableR, echo = FALSE}
+```{r kableR, echo = FALSE, eval = FALSE}
 rloss <- c(chp1$stress, chp5$stress, ch1$stress,ch2$stress,ch5$stress)
 riter <-  c(chp1$niter, chp5$niter, ch1$niter,ch2$niter,ch5$niter)
 x <- matrix(c(riter, rloss), 5, 2)
@@ -453,7 +456,7 @@ same solution. The number of iterations is not excatly the same, because
 of differences in the initial configuration. With smacofSSRStress() we can also
 do ordinal MDS.
 
-```{r rstressrunsO, echo = FALSE, cache = FALSE}
+```{r rstressrunsO, echo = FALSE, cache = FALSE, eval = FALSE}
 chp1o <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE)
 chp5o <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE)
 ch1o <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)
@@ -462,7 +465,7 @@ ch5o <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)
 ```
 
 
-```{r kableRO, echo = FALSE}
+```{r kableRO, echo = FALSE, eval = FALSE}
 rlosso <- c(chp1o$stress, chp5o$stress, ch1o$stress,ch2o$stress,ch5o$stress)
 ritero <-  c(chp1o$niter, chp5o$niter, ch1o$niter,ch2o$niter,ch5o$niter)
 x <- matrix(c(ritero, rlosso), 5, 2)
@@ -494,7 +497,7 @@ hmicro <- microbenchmark(
 print(hmicro)
 ```
 \sectionbreak
-```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main =""}
+```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(chp1, labels = ekmanLabels, cex = 2)
 ```
@@ -503,85 +506,85 @@ smacofConfigurationPlot(chp1, labels = ekmanLabels, cex = 2)
 smacofShepardPlot(chp1, rpow = .1, cex = 2)
 ```
 \sectionbreak
-```{r chp5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .5", main =""}
+```{r chp5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .5", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(chp5, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .5", main = ""}
+```{r chp5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .5", main = "", eval = FALSE}
 smacofShepardPlot(chp5, rpow = .5, cex = 2)
 ```
 \sectionbreak
-```{r ch1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 1", main =""}
+```{r ch1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 1", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(ch1, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 1", main = ""}
+```{r ch1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 1", main = "", eval = FALSE}
 smacofShepardPlot(ch1, rpow = 1, cex = 2)
 ```
 \sectionbreak
-```{r ch2c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 2", main =""}
+```{r ch2c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 2", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(ch2, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch2s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 2", main = ""}
+```{r ch2s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 2", main = "", eval = FALSE}
 smacofShepardPlot(ch2, rpow = 2, cex = 2)
 ```
 \sectionbreak
-```{r ch5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 5", main =""}
+```{r ch5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 5", main ="", eval = FALSE}
 par(pty = "s")
 smacofConfigurationPlot(ch5, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 5", main = ""}
+```{r ch5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 5", main = "", eval = FALSE}
 smacofShepardPlot(ch5, rpow = 5, cex = 2)
 ```
 
 \sectionbreak
-```{r chp1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .1", main =""}
+```{r chp1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .1", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(chp1o, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .1", main = ""}
+```{r chp1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .1", main = "", eval = FALSE}
 smacofShepardPlot(chp1o, rpow = 2, cex = 2)
 ```
 \sectionbreak
-```{r chp5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .5", main =""}
+```{r chp5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .5", main ="", eval = FALSE}
 par(pty="s")
 smacofConfigurationPlot(chp5o, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .5", main = ""}
+```{r chp5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .5", main = "", eval = FALSE}
 smacofShepardPlot(chp5o, rpow = .5, cex = 2)
 ```
 \sectionbreak
-```{r ch1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 1", main =""}
+```{r ch1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 1", main ="", eval = FALSE}
 par(pty = "s")
 smacofConfigurationPlot(ch1o, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 1", main = ""}
+```{r ch1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 1", main = "", eval = FALSE}
 smacofShepardPlot(ch1o, rpow = 1, cex = 2)
 ```
 \sectionbreak
-```{r ch2oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 2", main =""}
+```{r ch2oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 2", main ="", eval = FALSE}
 par(pty = "s")
 smacofConfigurationPlot(ch2o, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch2os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 2", main = ""}
+```{r ch2os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 2", main = "", eval = FALSE}
 smacofShepardPlot(ch2o, rpow = 2, cex = 2)
 ```
 \sectionbreak
-```{r ch5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 5", main =""}
+```{r ch5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 5", main ="", eval = FALSE}
 par(pty = "s")
 smacofConfigurationPlot(ch5o, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = ""}
+```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = "", eval = FALSE}
 smacofShepardPlot(ch5o, rpow = 5, cex = 2)
 ```
 
