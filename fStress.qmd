@@ -66,18 +66,40 @@ appreciated, but is not required. The files can be found at
 
 # Loss Functions
 
+The Multidimensional Scaling (MDS) loss function stress, origiunally proposed by @kruskal_64a, @kruskal_64b, is defined as
+\begin{equation}
+\sigma(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
+\end{equation}
+In definition \eqref{eq-stressdef} the $w_k$ are positive *weights*. The $\delta_k$ are 
+known or partially known non-negative *dissimilarities*. The vector $x$ has the coordinates of $n$
+points in $\mathbb{R}^p$, and the $d_k(x)$ are Euclidean *distances* between some or all pairs 
+of points. 
+
+For each $k$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
+and a matrix $A_k$ which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
+where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
+Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. 
+
+Metric least squares MDS minimizes stress over $x$.
+
+Suppose $f$ is a real-valued function defined of $[0,+\infty)$ such that
+
+* $f$ is strictly increasing,
+* $f$ is continuously differentiable,
+* $f(0) = 0$.
+
+Examples are $f(z)=\exp(rz)-1$, $f'(z)=r\exp(rz)$
+$f(z)=\log(r z+1)$, $f'(z)=r(rz+1)^{-1}$
+$f(z)=1-\exp(-r z)$ $f'(z)=r\exp(-rz)$
+and $f(z)=z^r$ $f'(z)=rz^{r-1}$
+
 The Multidimensional Scaling (MDS) loss function fStress is defined as
 \begin{equation}
 \sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
-with $f$ increasing and differentiable in the open interval $(0,+\infty)$. 
-In \eqref{eq-fdef} the $w_k$ are positive *weights*, and the $\delta_k$ are 
-known *dissimilarities*. The vector $x$ has the coordinates of $n$
-points in $\mathbb{R}^p$, and the $d_k(x)$ are Euclidean *distances* between pairs 
-of these points. For each $k$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
-and a matrix $A_k$ which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
-where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
-Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. Metric least squares MDS minimizes fStress over $x$.
+with $f$ strictly increasing and differentiable in the open interval $(0,+\infty)$.
+Moreover we assume that $f(0)=0$, so that  
+
 
 fStress was first introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
 algorithm to minimize loss \eqref(eq-fdef) was given, but the paper has formulas for the first 
@@ -298,15 +320,11 @@ from $y$ is equal to zero. Again, this eventuality must be monitored.
 
 # Software
 
-There are two different major routines in the repository. The R function
-fStress.R does metric MDS minimizing fStress with an arbitrary $f$. The C function
-smacofSSRStress.c does either metric or ordinal MDS minimizing rStress for
-an arabitrary $r$. The C code is compiled into a shared library smacofSSRStress.so, which is loaded by the R front-end smacofSSRStress.R
+The C function smacofSSRStress() in the file smacofSSFStress.c does either metric or ordinal MDS minimizing fStress for an arbitrary $f$. 
+
+The C code is compiled into a shared library smacofSSFStress.so, which is loaded by the R front-end smacofSSFStress.R
 that contains smacofSSRStress().
-The function fStress() is meant for exploration and research, while
-smacofSSRStress() is more suitable for production. fStress() is more general, in
-that it allows for more transformations, but smacofSSRStress() is more general
-in that it allows for ordinal MDS.
+
 
 
 ## Data

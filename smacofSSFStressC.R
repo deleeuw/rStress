@@ -27,25 +27,29 @@ smacofSSFStress <- function(theData,
     func <- function(x, r) x ^ r
   }
   if (what == 1) {
-    func <- function(x, r) log(x)
+    func <- function(x, r) log(r * x + 1)
   }
   if (what == 2) {
-    func <- function(x, r) exp(x)
+    func <- function(x, r) exp(r * x) - 1
   }
-  dhat <- func(theData$delta, rpow)
-  dhat <- dhat / sqrt(sum(wght * dhat^2))
+  if (what == 3) {
+    func <- function(x, r) 1 - exp(-r * x)
+  }
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
   } 
-  sold <- 0.0
   edis <- rep(0, ndat)
   for (k in 1:ndat) {
     i <- iind[k]
     j <- jind[k]
     edis[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
-    sold <- sold + wght[k] * (dhat[k] - func(edis[k], rpow))^2
   }
-  # scale
+  labd <- sum(wght * edis * dhat) / sum(edis ^ 2)
+  xold <- xold * labd
+  edis <- edis * labd
+  dhat <- func(theData$delta, rpow)
+  dhat <- dhat / sqrt(sum(wght * dhat^2))
+  sold <- sum(wght * (dhat - func(edis, rpow))^2)
   itel <- 1
   snew <- 0.0
   xold <- as.vector(xold)

@@ -63,8 +63,10 @@ void smacofSSMajorize(const int* nobj, const int* ndim, const int* ndat,
 void smacofSSMonotone(const int* ndat, const int* ties, int* iind, int* jind,
                       int* blks, double* edis, double* dhat, double* wght);
 
-void smacofSSSMatrixPrint(double *mat, int *nobj, int *ndat, int *iind, int *jind, int *width, int *digits);
+void smacofSSSMatrixPrint(double *mat, int *nobj, int *ndat, 
+  int *iind, int *jind, int *width, int *digits);
 
+void smacofSSVectorPrint(double* vec, int* n, int* width, int* digits);
 
 static inline void *xmalloc(const size_t size) {
   void *p = malloc(size);

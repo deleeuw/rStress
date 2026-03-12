@@ -1,28 +1,49 @@
+#define DEBUG 1
+
 #include "smacofSSFStress.h"
 
 void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, int* weighted,
                            double* sold, double* snew, double* eps, int* what,
-                           double* rpow, int* iind, int* jind, int* blks, double* wght,
-                           double* edis, double* dhat, double* xold,
-                           double* xnew) {
+                           double* rpow, int* iind, int* jind, int* blks,
+                           double* wght, double* edis, double* dhat,
+                           double* xold, double* xnew) {
     int Ndat = *ndat, Nobj = *nobj, Ndim = *ndim;
     double Eps = *eps;
     double* waux = xmalloc(Ndat * sizeof(double));
     double* daux = xmalloc(Ndat * sizeof(double));
+    double* haux = xmalloc(Ndat * sizeof(double));
     double* fval = xmalloc(Ndat * sizeof(double));
     double* gval = xmalloc(Ndat * sizeof(double));
     double* vinv = xmalloc(Nobj * (Nobj - 1) * sizeof(double) / 2);
     while (true) {
         double told = 0.0;
         (void)smacofSSFStressFList(edis, fval, gval, what, rpow, ndat);
+        int w = 10, d = 4;
+        if (DEBUG) {
+            printf("edis\n");
+            (void)smacofSSVectorPrint(edis, ndat, &w, &d);
+            printf("fval\n");
+            (void)smacofSSVectorPrint(fval, ndat, &w, &d);
+            printf("gval\n");
+            (void)smacofSSVectorPrint(gval, ndat, &w, &d);
+        }
         for (int k = 0; k < Ndat; k++) {
             waux[k] = wght[k] * SQUARE(gval[k]);
             daux[k] = (dhat[k] - fval[k]) / gval[k] + edis[k];
+            if (daux[k < 0]) {
+                haux[k] = waux[k] - waux[k] * daux[k] / edis[k];
+            }
             told += waux[k] * SQUARE(daux[k] - edis[k]);
         }
-        (void)smacofMPInverseV(nobj, ndat, iind, jind, waux, vinv);
+        if (DEBUG) {
+            printf("waux\n");
+            (void)smacofSSVectorPrint(waux, ndat, &w, &d);
+            printf("daux\n");
+            (void)smacofSSVectorPrint(daux, ndat, &w, &d);
+        }
+        (void)smacofMPInverseV(nobj, ndat, iind, jind, haux, vinv);
         (void)smacofSSFStressMajorize(nobj, ndim, ndat, snew, iind, jind,
                                       weighted, waux, vinv, edis, daux, xold,
                                       xnew);
@@ -111,8 +132,16 @@ void smacofSSSMatrixPrint(double* mat, int* nobj, int* ndat, int* iind,
     return;
 }
 
-void smacofSSFStressFList(double* x, double* f, double* g, int* what, double* rpow,
-                          int* nvec) {
+void smacofSSVectorPrint(double* vec, int* n, int* width, int* digits) {
+    for (int i = 0; i < *n; i++) {
+        printf(" %*.*f ", *width, *digits, vec[i]);
+    }
+    printf("\n\n");
+    return;
+}
+
+void smacofSSFStressFList(double* x, double* f, double* g, int* what,
+                          double* rpow, int* nvec) {
     double Rpow = *rpow;
     int Nvec = *nvec, What = *what;
     if (What == 0) {
@@ -124,14 +153,15 @@ void smacofSSFStressFList(double* x, double* f, double* g, int* what, double* rp
     }
     if (What == 1) {
         for (size_t i = 0; i < Nvec; i++) {
-            f[i] = log(x[i]);
-            g[i] = 1.0 / x[i];
+            f[i] = log(Rpow * x[i] + 1.0);
+            g[i] = Rpow  / (Rpow * x[i] + 1.0);
         }
         return;
     }
     if (What == 2) {
         for (size_t i = 0; i < Nvec; i++) {
-            f[i] = g[i] = exp(x[i]);
+            f[i] = exp(Rpow * x[i]) - 1;
+            g[i] = Rpow * exp(Rpow * x[i]);
         }
         return;
     }

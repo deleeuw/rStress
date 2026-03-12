@@ -10,7 +10,7 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
         xtmp[k] = 0.0;
     }
     for (int k = 0; k < Ndat; k++) {
-        if (edis[k] == 0.0) {
+        if ((edis[k] == 0.0) || (dhat[k] < 0)) {
             continue;
         }
         int is = iind[k], js = jind[k];
