@@ -6,18 +6,27 @@ smacofShepardPlot <-
            colline = "RED",
            colpoint = "BLUE",
            resolution = 100,
-           what = 0,
-           rpow = 1,
            lwd = 2,
            cex = 1,
            pch = 16) {
+    what <- h$what
+    rpow <- h$rpow
+    if (what == 0) {
+      func <- function(x, r) x ^ r
+    }
+    if (what == 1) {
+      func <- function(x, r) log(r * x + 1)
+    }
+    if (what == 2) {
+      func <- function(x, r) exp(r * x) - 1
+    }
     del <- h$delta
     dis <- h$confdist
-    maxDelta <- max(f(del, rpow))
-    minDelta <- min(f(del, rpow))
-    x <- f(del, rpow)
+    maxDelta <- max(func(del, rpow))
+    minDelta <- min(func(del, rpow))
+    x <- func(del, rpow)
     y <- h$dhat
-    z <- f(dis, rpow)
+    z <- func(dis, rpow)
     plot(
       rbind(cbind(x, z), cbind(x, y)),
       xlim = c(minDelta, maxDelta),
@@ -90,9 +99,21 @@ smacofDistDhatPlot <- function(h,
                                cex = 1.0,
                                lwd = 2,
                                pch = 16) {
-  uppe <- max(c(h$confdist, h$dhat))
+  what <- h$what
+  rpow <- h$rpow
+  if (what == 0) {
+    func <- function(x, r) x ^ r
+  }
+  if (what == 1) {
+    func <- function(x, r) log(r * x + 1)
+  }
+  if (what == 2) {
+    func <- function(x, r) exp(r * x) - 1
+  }
+  fdis <- func(h$confdist, rpow)
+  uppe <- max(c(fdis, h$dhat))
   plot(
-    h$confdist,
+    fdis,
     h$dhat,
     xlab = "distance",
     ylab = "disparity",
@@ -105,9 +126,9 @@ smacofDistDhatPlot <- function(h,
   )
   abline(0, 1, col = colline, lwd = lwd)
   if (fitlines) {
-    m <- length(h$confdist)
+    m <- length(fdis)
     for (i in 1:m) {
-      x <- h$confdist[i]
+      x <- fdis[i]
       y <- h$dhat[i]
       z <- (x + y) / 2
       a <- matrix(c(x, z, y, z), 2, 2)
