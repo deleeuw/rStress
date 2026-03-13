@@ -32,36 +32,19 @@ void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
 
 void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
-                           int* verbose, int* ordinal, int* weighted,
+                           int* verbose, int* ordinal,
                            double* sold, double* snew, double* eps, int *what,
                            double* rpow, int* iind, int* jind, int* blks, double* wght, 
                            double* edis, double* dhat, double* xold, double* xnew);
 
-void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew, int* iind,
-                      int* jind, int* weighted, double* wght, double* vinv, double* edis,
-                      double* dhat, double* xold, double* xnew);
+void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
+                             int* iind, int* jind, double* baux, double* vinv,
+                             double* dhat, double* dold, double* dnew,
+                             double* xold, double* xnew);
 
 void smacofSSFStressMonotone(int* ndat, int* ties, double* snew,
                        int* iind, int* jind, int* blks, double* edis,
                        double* dhat, double* wght);
-
-void smacofSSEngine(const int* nobj, const int* ndim, const int* ndat,
-                    const int* nord, const int* safe, int* itel, int* kord,
-                    const int* ties, const int* itmax, const int* digits,
-                    const int* width, const int* verbose, const int* ordinal,
-                    const int* weighted, double* sold, double* snew,
-                    const double* eps, int* iind, int* jind, int* iord,
-                    int* blks, double* wght, double* edis, double* dhat,
-                    double* xold, double* xnew);
-
-void smacofSSMajorize(const int* nobj, const int* ndim, const int* ndat,
-                      const int* itel, int* kord, const int* nord, int* iind,
-                      int* jind, const int* iord, const int* safe,
-                      const int* weighted, double* wght, double* vinv,
-                      double* dhat, double* xold, double* xnew);
-
-void smacofSSMonotone(const int* ndat, const int* ties, int* iind, int* jind,
-                      int* blks, double* edis, double* dhat, double* wght);
 
 void smacofSSSMatrixPrint(double *mat, int *nobj, int *ndat, 
   int *iind, int *jind, int *width, int *digits);

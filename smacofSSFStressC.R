@@ -4,7 +4,7 @@ source("smacofDataUtilities.R")
 source("smacofPlots.R")
 source("smacofTorgerson.R")
 
-smacofSSFStress <- function(theData,
+smacofSSFStressC <- function(theData,
                             ndim = 2,
                             xinit = NULL,
                             ties = 1,
@@ -22,6 +22,7 @@ smacofSSFStress <- function(theData,
   iind <- theData$iind
   jind <- theData$jind
   blks <- theData$blocks
+  delt <- theData$delta
   wght <- theData$weights / sum(theData$weights)
   if (what == 0) {
     func <- function(x, r) x ^ r
@@ -32,24 +33,21 @@ smacofSSFStress <- function(theData,
   if (what == 2) {
     func <- function(x, r) exp(r * x) - 1
   }
-  if (what == 3) {
-    func <- function(x, r) 1 - exp(-r * x)
-  }
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
   } 
-  edis <- rep(0, ndat)
+  dold <- dnew <- rep(0, ndat)
   for (k in 1:ndat) {
     i <- iind[k]
     j <- jind[k]
-    edis[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
+    dold[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
   }
-  labd <- sum(wght * edis * dhat) / sum(edis ^ 2)
+  labd <- sum(wght * dold * delt) / sum(dold ^ 2)
   xold <- xold * labd
-  edis <- edis * labd
-  dhat <- func(theData$delta, rpow)
+  dold <- dold * labd
+  dhat <- func(delt, rpow)
   dhat <- dhat / sqrt(sum(wght * dhat^2))
-  sold <- sum(wght * (dhat - func(edis, rpow))^2)
+  sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   snew <- 0.0
   xold <- as.vector(xold)
@@ -66,7 +64,6 @@ smacofSSFStress <- function(theData,
     width = as.integer(width),
     verbose = as.integer(verbose),
     ordinal = as.integer(ordinal),
-    weighted = as.integer(weighted),
     sold = as.double(sold),
     snew = as.double(snew),
     eps = as.double(eps),
@@ -76,15 +73,16 @@ smacofSSFStress <- function(theData,
     jind = as.integer(jind - 1),
     blks = as.integer(blks),
     wght = as.double(wght),
-    edis = as.double(edis),
     dhat = as.double(dhat),
+    dold = as.double(dold),
+    dnew = as.double(dnew),
     xold = as.double(xold),
     xnew = as.double(xnew)
   )
   result <- list(
     delta = theData$delta,
     dhat = h$dhat,
-    confdist = h$edis,
+    confdist = h$dnew,
     conf = matrix(h$xnew, nobj, ndim),
     weightmat = h$wght,
     stress = h$snew,

@@ -1,6 +1,7 @@
 
 SSRC = smacofIsotone.c smacofMPInverseV.c smacofSort.c \
-	smacofSSFStressEngine.c smacofSSFStressMajorize.c smacofSSFStressMonotone.c
+	smacofSSFStressEngine.c smacofSSFStressMajorize.c smacofSSFStressMonotone.c \
+	smacofSSPrint.c smacofSSFStressFlist.c
 
 %.o: %.c smacofSSFStress.h
 	clang -c $@
