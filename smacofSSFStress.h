@@ -13,6 +13,9 @@
 #define EPS 1e-6
 #define true 1
 #define false 0
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
 
 void primaryApproach(const int *, const int *, double *, double *,
                      double *, int *, int *);
@@ -49,7 +52,19 @@ void smacofSSFStressMonotone(int* ndat, int* ties, double* snew,
 void smacofSSSMatrixPrint(double *mat, int *nobj, int *ndat, 
   int *iind, int *jind, int *width, int *digits);
 
+void smacofSSRMatrixPrint(double *mat, int* nrow, int* ncol, 
+  int* width, int* digits);
+
 void smacofSSVectorPrint(double* vec, int* n, int* width, int* digits);
+
+void cholesky ( double a[], int n, int nn, double u[], int *nullty, 
+  int *ifault );
+
+void syminv ( double a[], int n, double c[], double w[], int *nullty, 
+  int *ifault );
+
+void timestamp (void);
+
 
 static inline void *xmalloc(const size_t size) {
   void *p = malloc(size);

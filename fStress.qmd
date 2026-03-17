@@ -45,14 +45,19 @@ abstract: TBD
 suppressPackageStartupMessages(library(knitr, quietly = TRUE))
 suppressPackageStartupMessages(library(tinytex, quietly = TRUE))
 suppressPackageStartupMessages(library(microbenchmark, quietly = TRUE))
+suppressPackageStartupMessages(library(MASS, quietly = TRUE))
+suppressPackageStartupMessages(library(isotone, quietly = TRUE))
 ```
 
 ```{r load sources, echo = FALSE}
-source("smacofSSFStress.R")
 source("smacofPlots.R")
 source("smacofSSFStressR.R")
 source("ekmanData.R")
+source("smacofDataUtilities.R")
+source("smacofPlots.R")
+source("smacofTorgerson.R")
 ```
+
 
 \sectionbreak 
 
@@ -66,7 +71,7 @@ appreciated, but is not required. The files can be found at
 
 # Loss Functions
 
-The Multidimensional Scaling (MDS) loss function stress, origiunally proposed by @kruskal_64a, @kruskal_64b, is defined as
+The Multidimensional Scaling (MDS) loss function *stress*, originally proposed by @kruskal_64a, @kruskal_64b, is defined as
 \begin{equation}
 \sigma(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
 \end{equation}
@@ -82,38 +87,62 @@ Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$.
 
 Metric least squares MDS minimizes stress over $x$.
 
-Suppose $f$ is a real-valued function defined of $[0,+\infty)$ such that
 
-* $f$ is strictly increasing,
-* $f$ is continuously differentiable,
-* $f(0) = 0$.
-
-Examples are $f(z)=\exp(rz)-1$, $f'(z)=r\exp(rz)$
-$f(z)=\log(r z+1)$, $f'(z)=r(rz+1)^{-1}$
-$f(z)=1-\exp(-r z)$ $f'(z)=r\exp(-rz)$
-and $f(z)=z^r$ $f'(z)=rz^{r-1}$
-
-The Multidimensional Scaling (MDS) loss function fStress is defined as
+The Multidimensional Scaling (MDS) loss function *fStress* is defined as
 \begin{equation}
-\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(\delta_k-f_r(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
-with $f$ strictly increasing and differentiable in the open interval $(0,+\infty)$.
-Moreover we assume that $f(0)=0$, so that  
+Suppose $f_r$ is a one-parameter family of real-valued functions defined on $[0,+\infty)$. The $f_r$ depend on a on a positive parameter $r$. We assume that for each $r>0$
+
+* $f_r$ is strictly increasing on $[0,+\infty)$,
+* $f_r$ is continuously differentiable on $[0,+\infty)$,
+* $f_r(0) = 0$.
+
+Thus $f_r(z)>0$ for all $z>0$ and $f_r$ has a continuously differentiable
+strictly increasing inverse. Some examples of $f$ are in the following table.
+
+```{r kabf, echo = FALSE, eval = TRUE}
+x <- matrix(c("log(rx + 1)", "r/(rx+1)", "(exp(y) - 1) / r", 
+              "x^r", "rx^{r - 1}", "y^{1 / r}",
+              "exp(rx) - 1", "r exp(rx)", "log(y + 1)/r"), 3, 3, byrow = TRUE)
+
+rn <- c("log", 
+       "power",
+       "exponent")
+row.names(x) <- rn
+cn <- c("f_r(x)", "f'_r(x)", "f_r^{-1}(y)")
+colnames(x) <- cn
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "f examples")
+```
 
 
-fStress was first introduced and studied in @groenen_deleeuw_mathar_C_95. No explicit
-algorithm to minimize loss \eqref(eq-fdef) was given, but the paper has formulas for the first 
-and second derivatives (see also @deleeuw_E_17r), which can of course be used in general purpose optimization routines.
 
-An important special case of fStress is rStress (also known as powerStress), which is
+fStress was first introduced in @groenen_deleeuw_mathar_C_95. They give a slightly different
+definition of fStress.
 \begin{equation}
-\sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2\label{eq-rdef}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f_r(d_k(x)))^2,\label{eq-fdef2}
 \end{equation}
-Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ by @ramsay_77. 
-There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
+where the $\delta_k^0$ are observed dissimilarities. 
+For all practical purposes definitions \eqref{eq-fdef} and \eqref{eq-fdef2} are
+equivalent. In the metric case we simply use $\smash{\delta_k=f_r(\delta_k^0)}$
+in \eqref{eq-fdef} in preprocessing. In the ordinal case $\delta_k^0$ and $f_r(\delta_k^0)$
+are isotone, so the ordinal constraints for both defintions are the same.
+@groenen_deleeuw_mathar_C_95 give formulas for the first and second derivatives of fStress with respect to $x$.
+For our purposes it is important that they also show that at a local minimum
+of fStress we have $d_k(x)>0$ for all $k$ for which $w_k\delta_k>0$, generalizing
+the result for stress proved by @deleeuw_A_84f.
+No explicit algorithm to minimize fStress was given, but the formulas for the first 
+and second derivatives (see @deleeuw_E_17r for derivatives up to order four) can of course be used in 
+general-purpose optimization routines.
+
+An important special case of fStress is *rStress* (also known as *powerStress*), which is
+\begin{equation}
+\sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k^r(x))^2\label{eq-rdef}
+\end{equation}
+Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ by @ramsay_77. There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
 
 Minimizing of either fStress or rStress over $x$ is a metric MDS problem. The
-$\delta_k$, and consequently the $f(\delta_k)$, are $K$ known numbers. In non-metric
+$\delta_k$ are $K$ known numbers. In non-metric
 MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
 is constrained to be in a subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
 version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$. 
@@ -145,7 +174,7 @@ MDS treats the dissimilarities as measured on a ratio scale.
 
 # Algorithm
 
-The technique proposed in this paper to minimize non-metric fStress or rStress
+The technique proposed in this paper to minimize non-metric fStress 
 is in the Alternating Least Squares (ALS) family. We start with an initial estimate
 $x^{(0)}$. We then minimize $\sigma_f$ over $\delta$ in $\Delta\cap\Sigma$ for 
 the current $\smash{d(x^{(0)})}$. The minimizer $\smash{\delta^{(0)}}$ is then used to minimize

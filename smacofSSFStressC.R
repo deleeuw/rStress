@@ -1,5 +1,8 @@
 dyn.load("smacofSSFStress.so")
 
+suppressPackageStartupMessages(library(MASS, quietly = TRUE))
+suppressPackageStartupMessages(library(isotone, quietly = TRUE))
+
 source("smacofDataUtilities.R")
 source("smacofPlots.R")
 source("smacofTorgerson.R")
@@ -15,7 +18,6 @@ smacofSSFStressC <- function(theData,
                             digits = 8,
                             width = 10,
                             verbose = TRUE,
-                            weighted = FALSE,
                             ordinal = FALSE) {
   nobj <- theData$nobj
   ndat <- theData$ndat
@@ -92,7 +94,6 @@ smacofSSFStressC <- function(theData,
     nobj = nobj,
     iind = h$iind,
     jind = h$jind,
-    weighted = weighted,
     ordinal = ordinal,
     ties = h$ties
   )

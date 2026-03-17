@@ -1,4 +1,3 @@
-#define DEBUG 0
 
 #include "smacofSSFStress.h"
 
@@ -21,15 +20,6 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
     while (true) {
         double told = 0.0;
         (void)smacofSSFStressFList(dold, fval, gval, what, rpow, ndat);
-        if (DEBUG) {
-            int wbug = 10, dbug = 4;
-            printf("dold\n");
-            (void)smacofSSVectorPrint(dold, ndat, &wbug, &dbug);
-            printf("fval\n");
-            (void)smacofSSVectorPrint(fval, ndat, &wbug, &dbug);
-            printf("gval\n");
-            (void)smacofSSVectorPrint(gval, ndat, &wbug, &dbug);
-        }
         for (int k = 0; k < Ndat; k++) {
             waux[k] = wght[k] * SQUARE(gval[k]);
             daux[k] = (dhat[k] - fval[k]) / gval[k] + dold[k];
@@ -40,17 +30,6 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                 vaux[k] = waux[k] - waux[k] * daux[k] / dold[k];
             }
             told += waux[k] * SQUARE(daux[k] - dold[k]);
-        }
-        if (DEBUG) {
-            int wbug = 10, dbug = 4;
-            printf("waux\n");
-            (void)smacofSSVectorPrint(waux, ndat, &wbug, &dbug);
-            printf("daux\n");
-            (void)smacofSSVectorPrint(daux, ndat, &wbug, &dbug);
-            printf("vaux\n");
-            (void)smacofSSVectorPrint(vaux, ndat, &wbug, &dbug);
-            printf("baux\n");
-            (void)smacofSSVectorPrint(baux, ndat, &wbug, &dbug);
         }
         (void)smacofMPInverseV(nobj, ndat, iind, jind, vaux, vinv);
         (void)smacofSSFStressMajorize(nobj, ndim, ndat, snew, iind, jind, baux,
@@ -83,9 +62,8 @@ void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
             *snew = smid;
         }
         double ops = 0.0;
-        for (int i = 0; i < Nobj * Ndim; i++) {
-            ops = fmax(ops,
-                       fmin(fabs(xold[i] - xnew[i]), fabs(xold[i] + xnew[i])));
+        for (int k = 0; k < Ndat; k++) {
+            ops = fmax(ops, fabs(dold[k] - dnew[k]));
         }
         if (*verbose) {
             if (*ordinal) {

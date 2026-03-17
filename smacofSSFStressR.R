@@ -1,11 +1,10 @@
+DEBUG <- FALSE
 
-
-source("smacofDataUtilities.R")
-source("smacofPlots.R")
 source("smacofTorgerson.R")
 
-library(MASS)
-library(isotone)
+suppressPackageStartupMessages(library(MASS, quietly = TRUE))
+suppressPackageStartupMessages(library(isotone, quietly = TRUE))
+
 
 smacofSSFStressR <- function(theData,
                              ndim = 2,
@@ -18,7 +17,6 @@ smacofSSFStressR <- function(theData,
                              digits = 8,
                              width = 10,
                              verbose = TRUE,
-                             weighted = FALSE,
                              ordinal = FALSE) {
   nobj <- theData$nobj
   ndat <- theData$ndat
@@ -62,8 +60,10 @@ smacofSSFStressR <- function(theData,
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   repeat {
-    waux <- wght * gunc(dold, rpow)^2
-    daux <- (dhat - func(dold, rpow)) / gunc(dold, rpow) + dold
+    fval <- func(dold, rpow)
+    gval <- gunc(dold, rpow)
+    waux <- wght * gval^2
+    daux <- ((dhat - fval) / gval) + dold
     told <- sum(waux * (daux - dold)^2)
     vmat <- bmat <- matrix(0, nobj, nobj)
     for (k in 1:ndat) {
@@ -82,6 +82,12 @@ smacofSSFStressR <- function(theData,
     diag(bmat) <- -rowSums(bmat)
     vinv <- ginv(vmat)
     xnew <- vinv %*% bmat %*% xold
+    if (DEBUG) {
+      print(bmat)
+      print(vinv)
+      print(xold)
+      print(xnew)
+    }
     epse <- max(abs(xold - xnew))
     dnew <- rep(0, ndat)
     for (k in 1:ndat) {
@@ -218,7 +224,6 @@ smacofSSFStressR <- function(theData,
     nobj = nobj,
     iind = iind,
     jind = jind,
-    weighted = weighted,
     ordinal = ordinal,
     ties = ties,
     what = what,
