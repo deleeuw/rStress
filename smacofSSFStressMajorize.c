@@ -1,4 +1,3 @@
-#define DEBUG 0
 
 #include "smacofSSFStress.h"
 
@@ -7,12 +6,7 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
                              double* dhat, double* dold, double* dnew,
                              double* xold, double* xnew) {
     int Ndat = *ndat, Nobj = *nobj, Ndim = *ndim;
-    int w = 10, d = 6;
     double* xtmp = xmalloc(Nobj * Ndim * sizeof(double));
-    if (DEBUG) {
-        (void)smacofSSSMatrixPrint(baux, nobj, ndat, iind, jind, &w, &d);
-        (void)smacofSSSMatrixPrint(vinv, nobj, ndat, iind, jind, &w, &d);
-    }
     for (int k = 0; k < Nobj * Ndim; k++) {
         xtmp[k] = 0.0;
     }
@@ -41,11 +35,6 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
             }
             k++;
         }
-    }
-    if (DEBUG) {
-        (void)smacofSSRMatrixPrint(xold, nobj, ndim, &w, &d);
-        (void)smacofSSRMatrixPrint(xtmp, nobj, ndim, &w, &d);
-        (void)smacofSSRMatrixPrint(xnew, nobj, ndim, &w, &d);
     }
     for (int k = 0; k < Ndat; k++) {
         int is = iind[k], js = jind[k];

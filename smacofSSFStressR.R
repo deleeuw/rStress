@@ -35,7 +35,7 @@ smacofSSFStressR <- function(theData,
     func <- function(x, r)
       log(r * x + 1)
     gunc <- function(x, r)
-      r / log(r * x + 1)
+      r / (r * x + 1)
   }
   if (what == 2) {
     func <- function(x, r)
@@ -45,6 +45,8 @@ smacofSSFStressR <- function(theData,
   }
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
+  } else {
+    xold <- xinit
   }
   dold <- rep(0, ndat)
   for (k in 1:ndat) {
@@ -52,7 +54,7 @@ smacofSSFStressR <- function(theData,
     j <- jind[k]
     dold[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
   }
-  labd <- sum(wght * dold * delt) / sum(dold^2)
+  labd <- sum(wght * dold * delt) / sum(wght * dold^2)
   xold <- xold * labd
   dold <- dold * labd
   dhat <- func(delt, rpow)
@@ -82,12 +84,6 @@ smacofSSFStressR <- function(theData,
     diag(bmat) <- -rowSums(bmat)
     vinv <- ginv(vmat)
     xnew <- vinv %*% bmat %*% xold
-    if (DEBUG) {
-      print(bmat)
-      print(vinv)
-      print(xold)
-      print(xnew)
-    }
     epse <- max(abs(xold - xnew))
     dnew <- rep(0, ndat)
     for (k in 1:ndat) {

@@ -1,4 +1,30 @@
+
+
 #include "smacofSSFStress.h"
+
+/*
+
+int nobj = 3, ndat = 3;
+int iind[3] = {2, 1, 2};
+int jind[3] = {0, 0, 1};
+int width = 10;
+int digits = 6;
+double wght[3] = {3.0, 2.0, 3.0};
+double vinv[3] = {0};
+
+int main(void) {
+    (void)smacofMPInverseV(&nobj, &ndat, iind, jind, wght, vinv);
+    (void)smacofSSSMatrixPrint(wght, &nobj, &ndat, iind, jind, &width, &digits);
+    (void)smacofSSSMatrixPrint(vinv, &nobj, &ndat, iind, jind, &width, &digits);
+    return EXIT_SUCCESS;
+}
+
+*/
+
+
+/*
+clang -o tester smacofMPInverseV.c smacofSSPrint.c syminv.c cholesky.c timestamp.c
+*/ 
 
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv) {

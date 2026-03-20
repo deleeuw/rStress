@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "asa007.h"
+#include "smacofSSFStress.h"
 
 /******************************************************************************/
 
