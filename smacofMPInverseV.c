@@ -21,10 +21,10 @@ int main(void) {
 
 */
 
-
 /*
-clang -o tester smacofMPInverseV.c smacofSSPrint.c syminv.c cholesky.c timestamp.c
-*/ 
+clang -o tester smacofMPInverseV.c smacofSSPrint.c syminv.c cholesky.c
+timestamp.c
+*/
 
 void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
                       double* vinv) {

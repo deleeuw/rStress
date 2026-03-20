@@ -37,14 +37,16 @@ smacofSSFStressC <- function(theData,
   }
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
-  } 
+  } else {
+    xold <- xinit
+  }
   dold <- dnew <- rep(0, ndat)
   for (k in 1:ndat) {
     i <- iind[k]
     j <- jind[k]
     dold[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
   }
-  labd <- sum(wght * dold * delt) / sum(dold ^ 2)
+  labd <- sum(wght * dold * delt) / sum(wght * dold ^ 2)
   xold <- xold * labd
   dold <- dold * labd
   dhat <- func(delt, rpow)
@@ -52,7 +54,7 @@ smacofSSFStressC <- function(theData,
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   snew <- 0.0
-  xold <- as.vector(xold)
+  # xold <- as.vector(xold)
   xnew <- xold
   h <- .C(
     "smacofSSRStressEngine",

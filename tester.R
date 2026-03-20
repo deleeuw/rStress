@@ -37,7 +37,8 @@ tester <- function(delt = d0,
   vmat <- -as.matrix(waux)
   diag(vmat) <- -rowSums(vmat)
   vinv <- ginv(vmat)
-  xnew <- vinv %*% bmat %*% xold
+  xtmp <- bmat %*% xold
+  xnew <- vinv %*% xtmp
   dnew <- dist(xnew)
   fdnew <- f(dnew)
   tnew <- sum(waux * (daux - dnew)^2)
