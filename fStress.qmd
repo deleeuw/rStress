@@ -52,6 +52,7 @@ suppressPackageStartupMessages(library(isotone, quietly = TRUE))
 ```{r load sources, echo = FALSE}
 source("smacofPlots.R")
 source("smacofSSFStressR.R")
+source("smacofSSFStressC.R")
 source("ekmanData.R")
 source("smacofDataUtilities.R")
 source("smacofPlots.R")
@@ -438,27 +439,37 @@ list(
     ties = h$ties
   )
 ```
-The output list can be fed immediately into the smacof plot routines for the
-configuration plot, the residual plot, the Shepard plot, and the Dist-Dhat
-plot.
+
+
+
+## Plots
+
+The four standard plots that come with the recent smacof programs are
+
+* smacofConfigurationPlot
+* smacofShepardPlot
+* smacofDistDhatPlot
+* smacofResidualPlot
+
+The output list of smacofSSFStress() can be fed immediately into these plot routines.
 
 
 # Examples
 
 We analyse the colour data from @ekman_54 with different functions $f$, first 
-using fStress(), then using smacofSSRStress().
+using fStress(), then using smacofSSFStress().
 
-```{r fstressruns, echo = FALSE, cache = FALSE, eval = FALSE}
-hl <- fStress(ekmanData, f = flog, g = glog, verbose = FALSE)
-hp1 <- fStress(ekmanData, f = fPower, g = gPower, r = .1, verbose = FALSE)
-hp5 <- fStress(ekmanData, f = fPower, g = gPower, r = .5, verbose = FALSE)
-h1 <- fStress(ekmanData, f = fPower, g = gPower, r = 1, verbose = FALSE)
-h2 <- fStress(ekmanData, f = fPower, g = gPower, r = 2, verbose = FALSE)
-h5 <- fStress(ekmanData, f = fPower, g = gPower, r = 5, verbose = FALSE)
-he <- fStress(ekmanData, f = fexp, g = gexp, verbose = FALSE)
+```{r fstressruns, echo = FALSE, cache = FALSE}
+hl <- smacofSSFStressR(ekmanData, what = 1, verbose = FALSE)
+hp1 <- smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE)
+hp5 <- smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE)
+h1 <- smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE)
+h2 <- smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)
+h5 <- smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE)
+he <- smacofSSFStressR(ekmanData, what = 2, verbose = FALSE)
 ```
 
-```{r kableF, echo = FALSE, eval = FALSE}
+```{r kableF, echo = FALSE}
 floss <- c(hl$stress, hp1$stress, hp5$stress, h1$stress,h2$stress,h5$stress,he$stress)
 fiter <-  c(hl$niter, hp1$niter, hp5$niter, h1$niter,h2$niter,h5$niter,he$niter)
 x <- matrix(c(fiter, floss), 7, 2)
@@ -473,46 +484,51 @@ r <- c("logarithm",
 row.names(x) <- r
 r <- c("niter", "fStress")
 colnames(x) <- r
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "fStress() results Ekman Data")
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressR() results Ekman Data")
 ```
-```{r rstressruns, echo = FALSE, cache = FALSE, eval = FALSE}
-chp1 <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE)
-chp5 <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE)
-ch1 <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE)
-ch2 <- smacofSSRStress(ekmanData, rpow = 2, verbose = FALSE)
-ch5 <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE)
+```{r rstressruns, echo = FALSE, cache = FALSE}
+chl <- smacofSSFStressC(ekmanData, what = 1, verbose = FALSE)
+chp1 <- smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE)
+chp5 <- smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE)
+ch1 <- smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE)
+ch2 <- smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE)
+ch5 <- smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE)
+che <- smacofSSFStressC(ekmanData, what = 2, verbose = FALSE)
+
 ```
-```{r kableR, echo = FALSE, eval = FALSE}
-rloss <- c(chp1$stress, chp5$stress, ch1$stress,ch2$stress,ch5$stress)
-riter <-  c(chp1$niter, chp5$niter, ch1$niter,ch2$niter,ch5$niter)
-x <- matrix(c(riter, rloss), 5, 2)
-r <- c("power .1",
+```{r kableR, echo = FALSE}
+rloss <- c(chl$stress, chp1$stress, chp5$stress, ch1$stress,ch2$stress,ch5$stress,che$stress)
+riter <-  c(chl$niter, chp1$niter, chp5$niter, ch1$niter,ch2$niter,ch5$niter, che$niter)
+x <- matrix(c(riter, rloss), 7, 2)
+r <- c("logarithm", 
+       "power .1",
        "power .5",
        "power 1",
        "power 2", 
-       "power 5"
+       "power 5",
+       "exponent"
 )
 row.names(x) <- r
 r <- c("niter", "rStress")
 colnames(x) <- r
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSRStress() results Ekman Data, metric MDS")
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressC() results Ekman Data, metric MDS")
 ```
 
 We see that for the power transforms the R and C functions arrive at the
-same solution. The number of iterations is not excatly the same, because
+same solution. The number of iterations is not exactly the same, because
 of differences in the initial configuration. With smacofSSRStress() we can also
 do ordinal MDS.
 
-```{r rstressrunsO, echo = FALSE, cache = FALSE, eval = FALSE}
-chp1o <- smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE)
-chp5o <- smacofSSRStress(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE)
-ch1o <- smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)
-ch2o <- smacofSSRStress(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)
-ch5o <- smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)
+```{r rstressrunsO, echo = FALSE, cache = FALSE}
+chp1o <- smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE)
+chp5o <- smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE)
+ch1o <- smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)
+ch2o <- smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)
+ch5o <- smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)
 ```
 
 
-```{r kableRO, echo = FALSE, eval = FALSE}
+```{r kableRO, echo = FALSE}
 rlosso <- c(chp1o$stress, chp5o$stress, ch1o$stress,ch2o$stress,ch5o$stress)
 ritero <-  c(chp1o$niter, chp5o$niter, ch1o$niter,ch2o$niter,ch5o$niter)
 x <- matrix(c(ritero, rlosso), 5, 2)
@@ -526,21 +542,21 @@ row.names(x) <- r
 r <- c("niter", "rStress")
 colnames(x) <- r
 kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "
-      smacofSSRStress() results Ekman Data, ordinal MDS")
+      smacofSSFStressC() results Ekman Data, ordinal MDS")
 ```
 
 The package microbenchmark (@mersmann_24) can be used to compare the
-R and C versions. For $r=1$ the C version is about four times faster,
-for $r=.1$ and $r=5$ it is about 10 times faster.
+R and C versions. For $r=1$ the C version is about ten times faster,
+for $r=.1$ and $r=5$ it is more like 30 times faster.
 
-```{r timer, echo = FALSE, cache = TRUE, eval = FALSE}
+```{r timer, echo = FALSE, cache = TRUE}
 hmicro <- microbenchmark(
-  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 1, verbose = FALSE),
-  smacofSSRStress(ekmanData, rpow = 1, verbose = FALSE),
-  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = .1, verbose = FALSE),
-  smacofSSRStress(ekmanData, rpow = .1, verbose = FALSE),
-  fStress(ekmanMatrix, xini = xinit, f = fPower, g = gPower, r = 5, verbose = FALSE),
-  smacofSSRStress(ekmanData, rpow = 5, verbose = FALSE))
+  smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE),
+  smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE),
+  smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE),
+  smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE),
+  smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE),
+  smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE))
 print(hmicro)
 ```
 \sectionbreak

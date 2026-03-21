@@ -57,7 +57,7 @@ smacofSSFStressC <- function(theData,
   # xold <- as.vector(xold)
   xnew <- xold
   h <- .C(
-    "smacofSSRStressEngine",
+    "smacofSSFStressEngine",
     nobj = as.integer(nobj),
     ndim = as.integer(ndim),
     ndat = as.integer(ndat),

@@ -1,7 +1,7 @@
 
 #include "smacofSSFStress.h"
 
-void smacofSSRStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
+void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
                            int* verbose, int* ordinal, double* sold,
                            double* snew, double* eps, int* what, double* rpow,

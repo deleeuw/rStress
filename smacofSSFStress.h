@@ -30,15 +30,16 @@ void mySort(double *, double *, double *, int *, int *, const int *);
 
 void smacofSSFStressFList(double *x, double *f, double *g, int *what, double* rpow, int *nvec);
 
-void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
+void smacofMPInverseV(const int* nobj, const int* ndat, const int* iind, const int* jind, const double* wght,
                       double* vinv);
 
 void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
                            int* ties, int* itmax, int* digits, int* width,
-                           int* verbose, int* ordinal,
-                           double* sold, double* snew, double* eps, int *what,
-                           double* rpow, int* iind, int* jind, int* blks, double* wght, 
-                           double* edis, double* dhat, double* xold, double* xnew);
+                           int* verbose, int* ordinal, double* sold,
+                           double* snew, double* eps, int* what, double* rpow,
+                           int* iind, int* jind, int* blks, double* wght,
+                           double* dhat, double* dold, double* dnew,
+                           double* xold, double* xnew);
 
 void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
                              int* iind, int* jind, double* baux, double* vinv,

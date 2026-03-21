@@ -26,7 +26,7 @@ clang -o tester smacofMPInverseV.c smacofSSPrint.c syminv.c cholesky.c
 timestamp.c
 */
 
-void smacofMPInverseV(int* nobj, int* ndat, int* iind, int* jind, double* wght,
+void smacofMPInverseV(const int* nobj, const int* ndat, const int* iind, const int* jind, const double* wght,
                       double* vinv) {
     int Nobj = *nobj, Ndat = *ndat;
     int Nvec = Nobj * (Nobj + 1) / 2;

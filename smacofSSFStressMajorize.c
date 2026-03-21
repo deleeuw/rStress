@@ -7,9 +7,6 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
                              double* xold, double* xnew) {
     int Ndat = *ndat, Nobj = *nobj, Ndim = *ndim;
     double* xtmp = xmalloc(Nobj * Ndim * sizeof(double));
-    // int w = 10, d = 6;
-    // (void)smacofSSSMatrixPrint(baux, nobj, ndat, iind, jind, &w, &d);
-    // (void)smacofSSSMatrixPrint(vinv, nobj, ndat, iind, jind, &w, &d);
     for (int k = 0; k < Nobj * Ndim; k++) {
         xtmp[k] = xnew[k] = 0.0;
     }
@@ -26,7 +23,7 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
     }
     for (int k = 0; k < Ndat; k++) {
         int is = iind[k], js = jind[k];
-        double elem = vinv[k];
+        double elem = -vinv[k];
         for (int s = 0; s < Ndim; s++) {
             double add = elem * (xtmp[is] - xtmp[js]);
             xnew[is] += add;
@@ -35,9 +32,6 @@ void smacofSSFStressMajorize(int* nobj, int* ndim, int* ndat, double* snew,
             js += Nobj;
         }
     }
-    // (void)smacofSSRMatrixPrint(xold, nobj, ndim, &w, &d);
-    // (void)smacofSSRMatrixPrint(xtmp, nobj, ndim, &w, &d);
-    // (void)smacofSSRMatrixPrint(xnew, nobj, ndim, &w, &d);
     for (int k = 0; k < Ndat; k++) {
         int is = iind[k], js = jind[k];
         double sum = 0.0;
