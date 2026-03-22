@@ -97,7 +97,9 @@ smacofSSFStressC <- function(theData,
     iind = h$iind,
     jind = h$jind,
     ordinal = ordinal,
-    ties = h$ties
+    ties = h$ties,
+    what = what,
+    rpow = rpow
   )
   return(result)
 }

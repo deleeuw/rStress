@@ -1,10 +1,10 @@
 DEBUG <- FALSE
 
 source("smacofTorgerson.R")
+source("smacofSSFStressSelect.R")
 
 suppressPackageStartupMessages(library(MASS, quietly = TRUE))
 suppressPackageStartupMessages(library(isotone, quietly = TRUE))
-
 
 smacofSSFStressR <- function(theData,
                              ndim = 2,
@@ -25,24 +25,9 @@ smacofSSFStressR <- function(theData,
   blks <- theData$blocks
   delt <- theData$delta
   wght <- theData$weights / sum(theData$weights)
-  if (what == 0) {
-    func <- function(x, r)
-      x^r
-    gunc <- function(x, r)
-      r * x^(r - 1)
-  }
-  if (what == 1) {
-    func <- function(x, r)
-      log(r * x + 1)
-    gunc <- function(x, r)
-      r / (r * x + 1)
-  }
-  if (what == 2) {
-    func <- function(x, r)
-      exp(r * x) - 1
-    gunc <- function(x, r)
-      r * exp(r * x)
-  }
+  h <- smacofSSFStressSelect(what)
+  func <- h$func
+  gunc <- h$gunc
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
   } else {

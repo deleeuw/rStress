@@ -1,5 +1,5 @@
 ---
-title: Minimizing fStress by Majorizing Gauss-Newton
+title: Minimizing fStress by Majorizing A Gauss-Newton Approximation
 author: 
     - name: Jan de Leeuw
       orcid: 0000-0003-1420-1797
@@ -78,16 +78,20 @@ The Multidimensional Scaling (MDS) loss function *stress*, originally proposed b
 \end{equation}
 In definition \eqref{eq-stressdef} the $w_k$ are positive *weights*. The $\delta_k$ are 
 known or partially known non-negative *dissimilarities*. The vector $x$ has the coordinates of $n$
-points in $\mathbb{R}^p$, and the $d_k(x)$ are Euclidean *distances* between some or all pairs 
+points in $\mathbb{R}^p$, i.e. we have $x=\text{vec}(X)$, where $X$ is an $n\times p$ 
+*configuration*. The $d_k(x)$ are Euclidean *distances* between some or all pairs 
 of points. 
-
-For each $k$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
-and a matrix $A_k$ which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
+For each $k$ in \eqref{eq-stressdef} there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
+and a matrix $A_k$, which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
 where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
 Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. 
 
-Metric least squares MDS minimizes stress over $x$.
-
+Metric least squares MDS minimizes stress over $x$. Both the $w_k$ and  
+$\delta_k$ are fixed and known non-negative numbers, with $\smash{K\leq\frac12n(n-1)}$. 
+We assume, without loss of generality, that the $w_k$ are positive. In non-metric
+MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
+is constrained to be in some known subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
+version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$.
 
 The Multidimensional Scaling (MDS) loss function *fStress* is defined as
 \begin{equation}
@@ -142,11 +146,7 @@ An important special case of fStress is *rStress* (also known as *powerStress*),
 \end{equation}
 Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ by @ramsay_77. There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
 
-Minimizing of either fStress or rStress over $x$ is a metric MDS problem. The
-$\delta_k$ are $K$ known numbers. In non-metric
-MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
-is constrained to be in a subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
-version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$. 
+ 
 Since $f$ is increasing, we can write fStress simply as
 \begin{equation}
 \sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-nmfdef}

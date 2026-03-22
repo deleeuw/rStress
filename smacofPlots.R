@@ -1,3 +1,4 @@
+source("smacofSSFStressSelect.R")
 
 smacofShepardPlot <-
   function(h,
@@ -6,33 +7,35 @@ smacofShepardPlot <-
            colline = "RED",
            colpoint = "BLUE",
            resolution = 100,
+           type = 0,
            lwd = 2,
            cex = 1,
            pch = 16) {
     what <- h$what
     rpow <- h$rpow
-    if (what == 0) {
-      func <- function(x, r) x ^ r
-    }
-    if (what == 1) {
-      func <- function(x, r) log(r * x + 1)
-    }
-    if (what == 2) {
-      func <- function(x, r) exp(r * x) - 1
-    }
+    hfnc <- smacofSSFStressSelect(what)
     del <- h$delta
     dis <- h$confdist
-    maxDelta <- max(func(del, rpow))
-    minDelta <- min(func(del, rpow))
-    x <- func(del, rpow)
-    y <- h$dhat
-    z <- func(dis, rpow)
+    dht <- h$dhat
+    if (type == 1) {
+      x <- del
+      y <- hfnc$finv(dht, rpow)
+      z <- dis
+      xlab <- "delta"
+      ylab <- "finv(dhat) and dist"
+    } else {
+      x <- hfnc$func(del, rpow)
+      y <- dht
+      z <- hfnc$func(dis, rpow)
+      xlab <- "f(delta)"
+      ylab <- "dhat and f(dist)"
+    }
     plot(
       rbind(cbind(x, z), cbind(x, y)),
-      xlim = c(minDelta, maxDelta),
+      xlim = c(min(x), max(x)),
       ylim = c(min(c(z, y)), max(c(z, y))),
-      xlab = "f(delta)",
-      ylab = "dhat and f(dist)",
+      xlab = xlab,
+      ylab = ylab,
       main = main,
       type = "n"
     )
