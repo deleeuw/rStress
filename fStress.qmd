@@ -93,9 +93,9 @@ MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
 is constrained to be in some known subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
 version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$.
 
-The Multidimensional Scaling (MDS) loss function *fStress* is defined as
+The Multidimensional Scaling (MDS) loss function *fStress* (@groenen_deleeuw_mathar_C_95) is defined as
 \begin{equation}
-\sigma_f(x):=\frac12\sum_{k=1}^K w_k(\delta_k-f_r(d_k(x)))^2,\label{eq-fdef}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f_r(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
 Suppose $f_r$ is a one-parameter family of real-valued functions defined on $[0,+\infty)$. The $f_r$ depend on a on a positive parameter $r$. We assume that for each $r>0$
 
@@ -391,6 +391,8 @@ Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. Thi
 
 ## Main
 
+smacofSSFStressSelect.R
+
 The arguments of fStress() are
 ```{r theargsf, echo = FALSE, eval = FALSE}
 args(fStress)
@@ -444,16 +446,49 @@ list(
 
 ## Plots
 
-The four standard plots that come with the recent smacof programs are
+The four standard plots that come with the recent smacof programs () are
 
 * smacofConfigurationPlot
 * smacofShepardPlot
 * smacofDistDhatPlot
 * smacofResidualPlot
 
-The output list of smacofSSFStress() can be fed immediately into these plot routines.
+The output list of smacofSSFStress() can be fed immediately into these four plot routines.
+They only have side effects (i.e. make a plot) and return NULL.
 
+It is easy to see what smacofConfigurationPlot() does. It plots a two-dimensional
+projection of the configuration. Its arguments are self-explanatory.
+```{r eval = FALSE}
+function(h, main = "ConfigurationPlot", labels = NULL, dim1 = 1, 
+    dim2 = 2, pch = 16, col = "RED", cex = 1) 
+```
+A Shepard plot (@deleeuw_mair_C_15) traditionally plots dissimilarities on the
+horizontal axis, and both disparities and distances on the vertical axis.
+The $(delta,dhat)$ points are connected by a straight line through the origin in the metric case and by an increasing step function in the ordinal case. The $(delta,dist)$ points
+are optionally connected with vertical "fitlines" to the corresponding $(delta,dhat)$ points.
+```{r eval = FALSE}
+function(h, main = "ShepardPlot", fitlines = TRUE, colline = "RED", 
+    colpoint = "BLUE", type = 0, lwd = 2, cex = 1, pch = 16) 
+```
+In the fStress context there is an extra arguments "type".
+Remember that the list h has both a "what" and an "rpow" element.
+The "type" argument is either one or zero. If it is zero (the default) then
+we plot $f(\delta_k)$ on the horizontal axis and $\hat d_k$ and $f(d_k(x))$ on the vertical axis. If "type" is equal to one then we plot $\delta_k$ on the horizontal axis and $f^{-1}(\hat d_k)$ and $d_k(x)$ on the vertical axis.
 
+smacofDistDhatPlot() has arguments
+```{r eval = FALSE}
+function(h, fitlines = TRUE, colline = "RED", colpoint = "BLUE", 
+    main = "Dist-Dhat Plot", type = 0, cex = 1, lwd = 2, pch = 16) 
+```
+The "type" parameter works in the same way as in the Shepard plot.
+
+smacofResidualPlot() is more complicated. It has arguments
+```{r eval = FALSE}
+function (h, main = "ResidualPlot", probs = seq(0, 1, 0.25), 
+    dats = 1, whatplot = "ecdf", type = 0, qlines = TRUE, colpoints = "RED", 
+    collines = "BLUE", lwdpoints = 2, lwdlines = 2, cex = 1, 
+    pch = 16) 
+```
 # Examples
 
 We analyse the colour data from @ekman_54 with different functions $f$, first 

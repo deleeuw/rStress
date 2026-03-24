@@ -6,7 +6,6 @@ smacofShepardPlot <-
            fitlines = TRUE,
            colline = "RED",
            colpoint = "BLUE",
-           resolution = 100,
            type = 0,
            lwd = 2,
            cex = 1,
@@ -17,18 +16,18 @@ smacofShepardPlot <-
     del <- h$delta
     dis <- h$confdist
     dht <- h$dhat
-    if (type == 1) {
-      x <- del
-      y <- hfnc$finv(dht, rpow)
-      z <- dis
-      xlab <- "delta"
-      ylab <- "finv(dhat) and dist"
-    } else {
+    if (type == 0) {
       x <- hfnc$func(del, rpow)
       y <- dht
       z <- hfnc$func(dis, rpow)
       xlab <- "f(delta)"
       ylab <- "dhat and f(dist)"
+    } else {
+      x <- del
+      y <- hfnc$finv(dht, rpow)
+      z <- dis
+      xlab <- "delta"
+      ylab <- "finv(dhat) and dist"
     }
     plot(
       rbind(cbind(x, z), cbind(x, y)),
@@ -99,27 +98,30 @@ smacofDistDhatPlot <- function(h,
                                colline = "RED",
                                colpoint = "BLUE",
                                main = "Dist-Dhat Plot",
+                               type = 0,
                                cex = 1.0,
                                lwd = 2,
                                pch = 16) {
   what <- h$what
   rpow <- h$rpow
-  if (what == 0) {
-    func <- function(x, r) x ^ r
+  hfnc <- smacofSSFStressSelect(what)
+  if (type == 0) {
+    x <- hfnc$func(h$confdis, rpow)
+    y <- h$dhat
+    xlab <- "f(dist)"
+    ylab <- "dhat"
+  } else {
+    x <- h$confdis
+    y <- hfnc$finv(h$dhat, rpow)
+    xlab <- "dist"
+    ylab <- "finv(dhat)"
   }
-  if (what == 1) {
-    func <- function(x, r) log(r * x + 1)
-  }
-  if (what == 2) {
-    func <- function(x, r) exp(r * x) - 1
-  }
-  fdis <- func(h$confdist, rpow)
-  uppe <- max(c(fdis, h$dhat))
+  uppe <- max(c(x, y))
   plot(
-    fdis,
-    h$dhat,
-    xlab = "distance",
-    ylab = "disparity",
+    x,
+    y,
+    xlab = xlab,
+    ylab = ylab,
     xlim = c(0, uppe),
     ylim = c(0, uppe),
     main = main,
@@ -129,22 +131,23 @@ smacofDistDhatPlot <- function(h,
   )
   abline(0, 1, col = colline, lwd = lwd)
   if (fitlines) {
-    m <- length(fdis)
+    m <- length(x)
     for (i in 1:m) {
-      x <- fdis[i]
-      y <- h$dhat[i]
-      z <- (x + y) / 2
-      a <- matrix(c(x, z, y, z), 2, 2)
+      xx <- x[i]
+      yy <- y[i]
+      zz <- (xx + yy) / 2
+      a <- matrix(c(xx, zz, yy, zz), 2, 2)
       lines(a, lwd = lwd)
     }
   }
 }
 
-smacofResidualPlot <- function(h, 
+smacofResidualPlot <- function(h,
                                main = "ResidualPlot",
                                probs = seq(0, 1, 0.25),
                                dats = 1,
-                               type = "ecdf",
+                               whatplot = "ecdf",
+                               type = 0,
                                qlines = TRUE,
                                colpoints = "RED",
                                collines = "BLUE",
@@ -152,15 +155,22 @@ smacofResidualPlot <- function(h,
                                lwdlines = 2,
                                cex = 1,
                                pch = 16) {
-  res <- h$confdist - h$dhat
+  what <- h$what
+  rpow <- h$rpow
+  hfnc <- smacofSSFStressSelect(what)
+  if (type == 0) {
+    res <- h$confdist - hfnc$finv(h$dhat, rpow)
+  } else {
+    res <- hfnc$func(h$confdist, rpow) - h$dhat
+  }
   res <- switch(dats, res, abs(res), res^2)
   q <- quantile(res, probs)
   n <- length(q)
-  e <- switch(type, 
-         "ecdf" = ecdf(res),
-         "density" = density(res)
-         )
-  plot(e, col = colpoints, main = main, lwd = lwdpoints)
+  e <- switch(whatplot, "ecdf" = ecdf(res), "density" = density(res))
+  plot(e,
+       col = colpoints,
+       main = main,
+       lwd = lwdpoints)
   for (i in 1:n) {
     abline(v = q[i], col = collines, lwd = lwdlines)
   }

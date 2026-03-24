@@ -1,4 +1,3 @@
-DEBUG <- FALSE
 
 source("smacofTorgerson.R")
 source("smacofSSFStressSelect.R")
