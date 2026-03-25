@@ -521,7 +521,7 @@ rnames <- c("logarithm",
 row.names(x) <- rnames
 cnames <- c("itel", "fStress")
 colnames(x) <- cnames
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressR() results Ekman Data")
+kable(x, format = "simple", align = "r", row.names = TRUE, caption = "smacofSSFStressR() results Ekman Data")
 ```
 
 ```{r kableR, echo = FALSE}
@@ -539,7 +539,7 @@ rnames <- c("logarithm",
 row.names(x) <- rnames
 cnames <- c("itel", "fStress")
 colnames(x) <- cnames
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressC() results Ekman Data, metric MDS")
+kable(x, format = "simple", align = "r", row.names = TRUE, caption = "smacofSSFStressC() results Ekman Data, metric MDS")
 ```
 
 We see that for the power transforms the R and C functions arrive at the
@@ -564,7 +564,7 @@ rnames <- c(
 row.names(x) <- rnames
 cnames <- c("itel", "fStress")
 colnames(x) <- cnames
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "
+kable(x, format = "simple", align = "r", row.names = TRUE, caption = "
       smacofSSFStressC() results Ekman Data, ordinal MDS")
 ```
 
@@ -572,25 +572,26 @@ The package microbenchmark (@mersmann_24) can be used to compare the
 R and C versions. For $r=1$ the C version is about ten times faster,
 for $r=.1$ and $r=5$ it is more like 30 times faster.
 
-```{r timer, echo = FALSE, cache = TRUE, eval = FALSE}
-hmicro <- microbenchmark(
-  smacofSSFStressR(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressR(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE),
-  smacofSSFStressC(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE))
-pprint(hmicro)
+```{r kablemicrometric, echo = FALSE}
+rtimes <- c(24030, 101871, 27919, 3967, 5929, 95857, 3883)
+ctimes <-  c(690, 3115, 1073, 382, 474, 2920, 349)
+x <- matrix(c(rtimes, ctimes), 7, 2)
+rnames <- c(
+       "logarithm",
+       "power .1",
+       "power .5",
+       "power 1",
+       "power 2", 
+       "power 5",
+       "exponential"
+)
+row.names(x) <- rnames
+cnames <- c("R times", "C times")
+colnames(x) <- cnames
+kable(x, format = "simple", align = "r", row.names = TRUE, caption = "
+      R and C timings Ekman Data in microseconds, metric MDS")
 ```
-```{r eval = FALSE}
+```{r eval = FALSE, echo = FALSE}
 Unit: microseconds
                                                      expr       min          lq        mean
    smacofSSFStressR(ekmanData, what = 1, verbose = FALSE) 23038.638  23619.8540  28644.5889
@@ -623,8 +624,27 @@ Unit: microseconds
    3882.6795   3933.7860  65264.415   100   c e 
     349.4020    405.1620   4051.948   100   c   
 ```
-
-```{r eval = FALSE}
+```{r kablemicrononmetric, echo = FALSE}
+rtimes <- c(111.93, 420.03, 115.90, 58.00, 95.26, 
+            1172.62, 63.57)
+ctimes <-  c(2.83, 8.96, 2.15, 1.46, 2.38, 23.53, 1.49)
+x <- matrix(c(rtimes, ctimes), 7, 2)
+rnames <- c(
+       "logarithm",
+       "power .1",
+       "power .5",
+       "power 1",
+       "power 2", 
+       "power 5",
+       "exponential"
+)
+row.names(x) <- rnames
+cnames <- c("R times", "C times")
+colnames(x) <- cnames
+kable(x, format = "simple", align = "r", row.names = TRUE, caption = "
+      R and C timings Ekman Data in milliseconds, nonmetric MDS")
+```
+```{r eval = FALSE, echo = FALSE}
 Unit: milliseconds
                                                                      expr         min          lq
    smacofSSFStressR(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE)  106.306973  110.755452
