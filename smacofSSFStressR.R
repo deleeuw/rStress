@@ -59,34 +59,29 @@ smacofSSFStressR <- function(theData,
         vmat[i, j] <- vmat[j, i] <- waux[k]
         bmat[i, j] <- bmat[j, i] <- waux[k] * daux[k] / dold[k]
       } else {
-        vmat[i, j] <- vmat[j, i] <- waux[k] - waux[k] * daux[k] / dold[k]
+        vmat[i, j] <- vmat[j, i] <- waux[k] - (waux[k] * daux[k] / dold[k])
       }
     }
     vmat <- -vmat
     bmat <- -bmat
     diag(vmat) <- -rowSums(vmat)
     diag(bmat) <- -rowSums(bmat)
-    vinv <- ginv(vmat)
+    vinv <- solve(vmat + (1/nobj)) - (1 / nobj)
     xnew <- vinv %*% bmat %*% xold
-    epse <- max(abs(xold - xnew))
     dnew <- rep(0, ndat)
     for (k in 1:ndat) {
       i <- iind[k]
       j <- jind[k]
       dnew[k] <- sqrt(sum((xnew[i, ] - xnew[j, ])^2))
     }
+    ops <- max(abs(dold - dnew))
     fdis <- func(dnew, rpow)
     smid <- sum(wght * (dhat - fdis)^2)
     tnew <- sum(waux * (daux - dnew)^2)
     if (ordinal) {
       tchr <- switch(ties, "primary", "secondary", "tertiary")
-      dhat <- gpava(
-        z = delt,
-        y = fdis,
-        weights = wght,
-        ties = tchr
-      )$x
-      dhat <- dhat / sqrt(sum(dhat^2))
+      dhat <- gpava(z = delt, y = fdis, weights = wght, ties = tchr)$x
+      dhat <- dhat / sqrt(sum(wght * dhat^2))
       snew <- sum(wght * (dhat - fdis)^2)
     } else {
       snew <- smid
@@ -131,9 +126,9 @@ smacofSSFStressR <- function(theData,
             width = width,
             format = "f"
           ),
-          "epse ",
+          "ops ",
           formatC(
-            epse,
+            ops,
             digits = digits,
             width = width,
             format = "f"
@@ -172,9 +167,9 @@ smacofSSFStressR <- function(theData,
             width = width,
             format = "f"
           ),
-          "epse ",
+          "ops ",
           formatC(
-            epse,
+            ops,
             digits = digits,
             width = width,
             format = "f"
@@ -183,7 +178,7 @@ smacofSSFStressR <- function(theData,
         )
       }
     }
-    if ((itel == itmax) || (epse < eps)) {
+    if ((itel == itmax) || (ops < eps)) {
       break
     }
     xold <- xnew
@@ -192,19 +187,19 @@ smacofSSFStressR <- function(theData,
     itel <- itel + 1
   }
   result <- list(
-    delta = delt,
+    delt = delt,
     dhat = dhat,
-    confdist = dnew,
-    conf = xnew,
-    weightmat = wght,
-    stress = snew,
+    dust = dnew,
+    xmat = xnew,
+    wmat = wght,
+    loss = snew,
     ndim = ndim,
     init = xinit,
-    niter = itel,
+    itel = itel,
     nobj = nobj,
     iind = iind,
     jind = jind,
-    ordinal = ordinal,
+    ordi = ordinal,
     ties = ties,
     what = what,
     rpow = rpow

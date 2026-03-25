@@ -5,8 +5,7 @@ smacofSSFStressSelect <- function(what = 0) {
     gunc <- function(x, r)
       r * x^(r - 1.0)
     finv <- function(y, r)
-      y ^ (1.0 / r)
-      
+      y^(1.0 / r)
   }
   if (what == 1) {
     func <- function(x, r)
@@ -24,5 +23,9 @@ smacofSSFStressSelect <- function(what = 0) {
     finv <- function(y, r)
       log(y + 1) / r
   }
-  return(list(func = func, gunc = gunc, finv = finv))
+  return(list(
+    func = func,
+    gunc = gunc,
+    finv = finv
+  ))
 }

@@ -38,7 +38,7 @@ makeMDSData <- function(delta, weights = NULL) {
     nobj = nobj,
     ndat = ndat
   )
-  class(result) <- "smacofSSData"
+  class(result) <- c("smacofSSData")
   return(result)
 }
 

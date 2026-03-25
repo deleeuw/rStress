@@ -49,7 +49,10 @@ suppressPackageStartupMessages(library(MASS, quietly = TRUE))
 suppressPackageStartupMessages(library(isotone, quietly = TRUE))
 ```
 
-```{r load sources, echo = FALSE}
+```{r load_shared_lib, echo = FALSE}
+```
+
+```{r load_sources, echo = FALSE}
 source("smacofPlots.R")
 source("smacofSSFStressR.R")
 source("smacofSSFStressC.R")
@@ -58,8 +61,6 @@ source("smacofDataUtilities.R")
 source("smacofPlots.R")
 source("smacofTorgerson.R")
 ```
-
-
 \sectionbreak 
 
 **Note:** This is a working manuscript which will be expanded/updated
@@ -389,11 +390,13 @@ $$
 $$
 Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. This scaling is done also if xinit is not NULL.
 
-## Main
+## Functions
 
 smacofSSFStressSelect.R
 
-The arguments of fStress() are
+## Main
+
+The arguments of smacofSSFStressR() and smacofSSFStressR() are
 ```{r theargsf, echo = FALSE, eval = FALSE}
 args(fStress)
 ```
@@ -405,13 +408,13 @@ fPower and gPower). Since all code is in R, it is easy to add additional
 transformation functions if needed. The output of fStress() is 
 ```{r outputf, eval = FALSE}
 list(
-    delta = delta, 
+    delt = delta, 
     dhat = delf, 
-    weightmat = wght,
+    wmat = wght,
     conf = xnew,
-    confdist = dnew,
-    stress = snew,
-    niter = itel
+    dist = dnew,
+    loss = snew,
+    itel = itel
   )
 ```
 
@@ -424,20 +427,20 @@ There is only a single parameter $rpow$ for the transformation. The output
 of smacofSSRStress() is
 ```{r output, eval = FALSE}
 list(
-    delta = theData$delta,
+    delt = theData$delta,
     dhat = h$dhat,
-    confdist = h$edis,
-    conf = matrix(h$xnew, nobj, ndim),
-    weightmat = h$wght,
-    stress = h$snew,
+    dist = h$edis,
+    xmat = matrix(h$xnew, nobj, ndim),
+    wmat = h$wght,
+    loss = h$snew,
     ndim = ndim,
     init = xinit,
-    niter = h$itel,
+    itel = h$itel,
     nobj = nobj,
     iind = h$iind,
     jind = h$jind,
     weighted = weighted,
-    ordinal = ordinal,
+    ordi = ordinal,
     ties = h$ties
   )
 ```
@@ -492,9 +495,9 @@ function (h, main = "ResidualPlot", probs = seq(0, 1, 0.25),
 # Examples
 
 We analyse the colour data from @ekman_54 with different functions $f$, first 
-using fStress(), then using smacofSSFStress().
+using smacofSSFStressR(), then using smacofSSFStressC().
 
-```{r fstressruns, echo = FALSE, cache = FALSE}
+```{r rfstressruns, echo = FALSE, cache = FALSE}
 hl <- smacofSSFStressR(ekmanData, what = 1, verbose = FALSE)
 hp1 <- smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE)
 hp5 <- smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE)
@@ -503,12 +506,11 @@ h2 <- smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)
 h5 <- smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE)
 he <- smacofSSFStressR(ekmanData, what = 2, verbose = FALSE)
 ```
-
 ```{r kableF, echo = FALSE}
-floss <- c(hl$stress, hp1$stress, hp5$stress, h1$stress,h2$stress,h5$stress,he$stress)
-fiter <-  c(hl$niter, hp1$niter, hp5$niter, h1$niter,h2$niter,h5$niter,he$niter)
+floss <- c(hl$loss, hp1$loss, hp5$loss, h1$loss,h2$loss,h5$loss,he$loss)
+fiter <- c(hl$itel, hp1$itel, hp5$itel, h1$itel,h2$itel,h5$itel,he$itel)
 x <- matrix(c(fiter, floss), 7, 2)
-r <- c("logarithm", 
+rnames <- c("logarithm", 
        "power .1",
        "power .5",
        "power 1",
@@ -516,26 +518,17 @@ r <- c("logarithm",
        "power 5",
        "exponent"
 )
-row.names(x) <- r
-r <- c("niter", "fStress")
-colnames(x) <- r
+row.names(x) <- rnames
+cnames <- c("itel", "fStress")
+colnames(x) <- cnames
 kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressR() results Ekman Data")
 ```
-```{r rstressruns, echo = FALSE, cache = FALSE}
-chl <- smacofSSFStressC(ekmanData, what = 1, verbose = FALSE)
-chp1 <- smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE)
-chp5 <- smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE)
-ch1 <- smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE)
-ch2 <- smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE)
-ch5 <- smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE)
-che <- smacofSSFStressC(ekmanData, what = 2, verbose = FALSE)
 
-```
 ```{r kableR, echo = FALSE}
-rloss <- c(chl$stress, chp1$stress, chp5$stress, ch1$stress,ch2$stress,ch5$stress,che$stress)
-riter <-  c(chl$niter, chp1$niter, chp5$niter, ch1$niter,ch2$niter,ch5$niter, che$niter)
+rloss <- c(0.005791783, 0.000273273, 0.005954311, 0.01721325,0.03288071,0.02031532,0.02073349)
+riter <-  c(206, 854, 237, 35, 50,807, 32)
 x <- matrix(c(riter, rloss), 7, 2)
-r <- c("logarithm", 
+rnames <- c("logarithm", 
        "power .1",
        "power .5",
        "power 1",
@@ -543,9 +536,9 @@ r <- c("logarithm",
        "power 5",
        "exponent"
 )
-row.names(x) <- r
-r <- c("niter", "rStress")
-colnames(x) <- r
+row.names(x) <- rnames
+cnames <- c("itel", "fStress")
+colnames(x) <- cnames
 kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "smacofSSFStressC() results Ekman Data, metric MDS")
 ```
 
@@ -554,28 +547,23 @@ same solution. The number of iterations is not exactly the same, because
 of differences in the initial configuration. With smacofSSRStress() we can also
 do ordinal MDS.
 
-```{r rstressrunsO, echo = FALSE, cache = FALSE}
-chp1o <- smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE)
-chp5o <- smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE)
-ch1o <- smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)
-ch2o <- smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)
-ch5o <- smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)
-```
-
 
 ```{r kableRO, echo = FALSE}
-rlosso <- c(chp1o$stress, chp5o$stress, ch1o$stress,ch2o$stress,ch5o$stress)
-ritero <-  c(chp1o$niter, chp5o$niter, ch1o$niter,ch2o$niter,ch5o$niter)
-x <- matrix(c(ritero, rlosso), 5, 2)
-r <- c("power .1",
+rlosso <- c(0.0002466493, 6.567816e-06, 0.0001651214, 0.0005337258, 0.0009014502, 0.001100227, 0.0007894837)
+ritero <-  c(336, 975, 207, 141, 233, 2638, 160)
+x <- matrix(c(ritero, rlosso), 7, 2)
+rnames <- c(
+       "logarithm",
+       "power .1",
        "power .5",
        "power 1",
        "power 2", 
-       "power 5"
+       "power 5",
+       "exponential"
 )
-row.names(x) <- r
-r <- c("niter", "rStress")
-colnames(x) <- r
+row.names(x) <- rnames
+cnames <- c("itel", "fStress")
+colnames(x) <- cnames
 kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "
       smacofSSFStressC() results Ekman Data, ordinal MDS")
 ```
@@ -584,16 +572,92 @@ The package microbenchmark (@mersmann_24) can be used to compare the
 R and C versions. For $r=1$ the C version is about ten times faster,
 for $r=.1$ and $r=5$ it is more like 30 times faster.
 
-```{r timer, echo = FALSE, cache = TRUE}
+```{r timer, echo = FALSE, cache = TRUE, eval = FALSE}
 hmicro <- microbenchmark(
-  smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE),
-  smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE),
-  smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE),
-  smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE),
-  smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE),
-  smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE))
-print(hmicro)
+  smacofSSFStressR(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, rpow = .1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, rpow = .5, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressR(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE),
+  smacofSSFStressC(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE))
+pprint(hmicro)
 ```
+```{r eval = FALSE}
+Unit: microseconds
+                                                     expr       min          lq        mean
+   smacofSSFStressR(ekmanData, what = 1, verbose = FALSE) 23038.638  23619.8540  28644.5889
+   smacofSSFStressC(ekmanData, what = 1, verbose = FALSE)   618.198    668.6690    738.0201
+ smacofSSFStressR(ekmanData, rpow = 0.1, verbose = FALSE) 99130.046 100679.3745 111889.0709
+ smacofSSFStressC(ekmanData, rpow = 0.1, verbose = FALSE)  2901.857   3071.4125   3152.8094
+ smacofSSFStressR(ekmanData, rpow = 0.5, verbose = FALSE) 26666.523  27385.2325  31396.8271
+ smacofSSFStressC(ekmanData, rpow = 0.5, verbose = FALSE)  1011.757   1058.1485   1090.9260
+   smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE)  3676.839   3922.1010   5143.4389
+   smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE)   340.464    361.7635    401.6942
+   smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)  5583.913   5854.9640   6903.7317
+   smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE)   407.048    438.7000    481.1440
+   smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE) 92626.995  95049.3980 100948.4161
+   smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE)  2747.779   2863.9730   2987.3613
+   smacofSSFStressR(ekmanData, what = 2, verbose = FALSE)  3689.795   3823.3525   4600.4087
+   smacofSSFStressC(ekmanData, what = 2, verbose = FALSE)   306.270    335.2160    406.1378
+      median          uq        max neval    cld
+  24030.0180  27291.9780  86524.760   100 a     
+    690.3580    734.2280   4413.978   100  bc   
+ 101870.7320 105006.2890 220077.627   100    d  
+   3115.0980   3169.8125   6647.986   100   c e 
+  27918.6220  31085.1340  90309.224   100 a     
+   1073.4005   1118.4800   1236.847   100  bc   
+   3966.5040   4026.5485  65376.304   100  b  e 
+    381.6485    439.1715    510.163   100   c   
+   5929.2355   6030.7515  68230.150   100     e 
+    474.4315    523.5905    611.720   100   c   
+  95857.4055  97766.0990 158889.965   100      f
+   2919.5690   2962.3525   6655.858   100   c e 
+   3882.6795   3933.7860  65264.415   100   c e 
+    349.4020    405.1620   4051.948   100   c   
+```
+
+```{r eval = FALSE}
+Unit: milliseconds
+                                                                     expr         min          lq
+   smacofSSFStressR(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE)  106.306973  110.755452
+   smacofSSFStressC(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE)    2.542246    2.768279
+ smacofSSFStressR(ekmanData, rpow = 0.1, verbose = FALSE, ordinal = TRUE)  402.058095  414.841136
+ smacofSSFStressC(ekmanData, rpow = 0.1, verbose = FALSE, ordinal = TRUE)    8.338334    8.780068
+ smacofSSFStressR(ekmanData, rpow = 0.5, verbose = FALSE, ordinal = TRUE)  109.666185  114.417306
+ smacofSSFStressC(ekmanData, rpow = 0.5, verbose = FALSE, ordinal = TRUE)    1.954347    2.092128
+   smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)   55.808298   57.330997
+   smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)    1.311385    1.401995
+   smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)   89.000996   93.787131
+   smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)    2.181077    2.311272
+   smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE) 1118.418623 1155.259296
+   smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)   22.259269   22.983288
+   smacofSSFStressR(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE)   59.894727   62.936353
+   smacofSSFStressC(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE)    1.383791    1.457017
+        mean      median          uq         max neval       cld
+  113.852865  111.933280  113.670327  176.549526   100 a        
+    2.911093    2.826417    2.886216    6.084523   100  b       
+  423.109740  420.029461  424.704014  487.229322   100   c      
+    8.936843    8.955302    9.134964    9.351895   100    d     
+  117.196493  115.901117  117.756203  179.792503   100 a        
+    2.184620    2.150245    2.207522    5.484734   100  b       
+   58.943635   57.998190   58.850642  122.780691   100     e    
+    1.450922    1.456792    1.499903    1.597770   100  b       
+   95.140413   95.257411   96.381037   99.670098   100      f   
+    2.402289    2.382243    2.436856    5.536845   100  b       
+ 1176.369676 1172.620849 1186.844917 1265.874795   100       g  
+   23.475012   23.533077   23.939449   24.703853   100        h 
+   63.974907   63.568348   64.972679   68.236505   100         i
+    1.497407    1.492666    1.539263    1.626183   100  b       
+```
+
 \sectionbreak
 ```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main ="", eval = FALSE}
 par(pty="s")
@@ -685,7 +749,6 @@ smacofConfigurationPlot(ch5o, labels = ekmanLabels, cex = 2)
 ```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = "", eval = FALSE}
 smacofShepardPlot(ch5o, rpow = 5, cex = 2)
 ```
-
 
 
 \sectionbreak

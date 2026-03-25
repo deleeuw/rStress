@@ -1,3 +1,4 @@
+
 dyn.load("smacofSSFStress.so")
 
 suppressPackageStartupMessages(library(MASS, quietly = TRUE))
@@ -54,7 +55,6 @@ smacofSSFStressC <- function(theData,
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   snew <- 0.0
-  # xold <- as.vector(xold)
   xnew <- xold
   h <- .C(
     "smacofSSFStressEngine",
@@ -84,19 +84,19 @@ smacofSSFStressC <- function(theData,
     xnew = as.double(xnew)
   )
   result <- list(
-    delta = theData$delta,
+    delt = theData$delta,
     dhat = h$dhat,
-    confdist = h$dnew,
-    conf = matrix(h$xnew, nobj, ndim),
-    weightmat = h$wght,
-    stress = h$snew,
+    dist = h$dnew,
+    xmat = matrix(h$xnew, nobj, ndim),
+    wmat = h$wght,
+    loss = h$snew,
     ndim = ndim,
     init = xinit,
-    niter = h$itel,
+    itel = h$itel,
     nobj = nobj,
     iind = h$iind,
     jind = h$jind,
-    ordinal = ordinal,
+    ordi = ordinal,
     ties = h$ties,
     what = what,
     rpow = rpow

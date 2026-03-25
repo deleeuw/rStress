@@ -13,8 +13,8 @@ smacofShepardPlot <-
     what <- h$what
     rpow <- h$rpow
     hfnc <- smacofSSFStressSelect(what)
-    del <- h$delta
-    dis <- h$confdist
+    del <- h$delt
+    dis <- h$dist
     dht <- h$dhat
     if (type == 0) {
       x <- hfnc$func(del, rpow)
@@ -69,10 +69,10 @@ smacofConfigurationPlot <-
            pch = 16,
            col = "RED",
            cex = 1.0) {
-    xnew <- h$conf
+    xmat <- h$xmat
     if (is.null(labels)) {
       plot(
-        xnew[, c(dim1, dim2)],
+        xmat[, c(dim1, dim2)],
         xlab = paste("dimension", dim1),
         ylab = paste("dimension", dim2),
         main = main,
@@ -83,13 +83,13 @@ smacofConfigurationPlot <-
     }
     else {
       plot(
-        xnew[, c(dim1, dim2)],
+        xmat[, c(dim1, dim2)],
         xlab = paste("dimension", dim1),
         ylab = paste("dimension", dim2),
         main = main,
         type = "n"
       )
-      text(xnew[, c(dim1, dim2)], labels, col = col, cex = cex)
+      text(xmat[, c(dim1, dim2)], labels, col = col, cex = cex)
     }
   }
 
@@ -106,12 +106,12 @@ smacofDistDhatPlot <- function(h,
   rpow <- h$rpow
   hfnc <- smacofSSFStressSelect(what)
   if (type == 0) {
-    x <- hfnc$func(h$confdis, rpow)
+    x <- hfnc$func(h$dist, rpow)
     y <- h$dhat
     xlab <- "f(dist)"
     ylab <- "dhat"
   } else {
-    x <- h$confdis
+    x <- h$dist
     y <- hfnc$finv(h$dhat, rpow)
     xlab <- "dist"
     ylab <- "finv(dhat)"
@@ -159,9 +159,9 @@ smacofResidualPlot <- function(h,
   rpow <- h$rpow
   hfnc <- smacofSSFStressSelect(what)
   if (type == 0) {
-    res <- h$confdist - hfnc$finv(h$dhat, rpow)
+    res <- h$dist - hfnc$finv(h$dhat, rpow)
   } else {
-    res <- hfnc$func(h$confdist, rpow) - h$dhat
+    res <- hfnc$func(h$dist, rpow) - h$dhat
   }
   res <- switch(dats, res, abs(res), res^2)
   q <- quantile(res, probs)
