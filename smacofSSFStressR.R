@@ -23,6 +23,7 @@ smacofSSFStressR <- function(theData,
   jind <- theData$jind
   blks <- theData$blocks
   delt <- theData$delta
+  labl <- theData$label
   wght <- theData$weights / sum(theData$weights)
   h <- smacofSSFStressSelect(what)
   func <- h$func
@@ -189,7 +190,7 @@ smacofSSFStressR <- function(theData,
   result <- list(
     delt = delt,
     dhat = dhat,
-    dust = dnew,
+    dist = dnew,
     xmat = xnew,
     wmat = wght,
     loss = snew,
@@ -202,7 +203,8 @@ smacofSSFStressR <- function(theData,
     ordi = ordinal,
     ties = ties,
     what = what,
-    rpow = rpow
+    rpow = rpow,
+    labl = labl
   )
   return(result)
 }

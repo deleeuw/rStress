@@ -1,6 +1,6 @@
 
 
-makeMDSData <- function(delta, weights = NULL) {
+makeMDSData <- function(delta, label, weights = NULL) {
   nobj <- attr(delta, "Size")
   if (is.null(weights)) {
     weights <- as.dist(1 - diag(nobj))
@@ -36,7 +36,8 @@ makeMDSData <- function(delta, weights = NULL) {
     blocks = theData[, 4],
     weights = theData[, 5],
     nobj = nobj,
-    ndat = ndat
+    ndat = ndat, 
+    label = label
   )
   class(result) <- c("smacofSSData")
   return(result)

@@ -23,6 +23,11 @@ smacofSSFStressSelect <- function(what = 0) {
     finv <- function(y, r)
       log(y + 1) / r
   }
+  if (what == 3) {
+    func <- function(x, r) r * log(x)
+    gunc <- function(x, r) r / x
+    finv <- function(y, r) exp(y / r)
+  } 
   return(list(
     func = func,
     gunc = gunc,

@@ -49,9 +49,6 @@ suppressPackageStartupMessages(library(MASS, quietly = TRUE))
 suppressPackageStartupMessages(library(isotone, quietly = TRUE))
 ```
 
-```{r load_shared_lib, echo = FALSE}
-```
-
 ```{r load_sources, echo = FALSE}
 source("smacofPlots.R")
 source("smacofSSFStressR.R")
@@ -77,102 +74,69 @@ The Multidimensional Scaling (MDS) loss function *stress*, originally proposed b
 \begin{equation}
 \sigma(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
 \end{equation}
-In definition \eqref{eq-stressdef} the $w_k$ are positive *weights*. The $\delta_k$ are 
-known or partially known non-negative *dissimilarities*. The vector $x$ has the coordinates of $n$
-points in $\mathbb{R}^p$, i.e. we have $x=\text{vec}(X)$, where $X$ is an $n\times p$ 
-*configuration*. The $d_k(x)$ are Euclidean *distances* between some or all pairs 
-of points. 
-For each $k$ in \eqref{eq-stressdef} there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
-and a matrix $A_k$, which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
+In definition \eqref{eq-stressdef} 
+
+* $w$ is a vector of $K$ known positive *weights*;
+* $\delta\in\Delta$, with $\Delta$ a set of $K$-element vectors with non-negative *dissimilarities*;
+* $x:=\text{vec}(X)$, with $X$ the *configuration*, an $n\times p$ matrix of $n$ *points*
+in $p$ *dimensions*;
+* $d(x)$ are $K$ Euclidean *distances* between some or all pairs of points. 
+
+Thus $K\leq\frac12n(n -1)$. For each $1\leq k\leq K$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
+and a block-diagonal matrix $A_k$, which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
 where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
 Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. 
 
-Metric least squares MDS minimizes stress over $x$. Both the $w_k$ and  
-$\delta_k$ are fixed and known non-negative numbers, with $\smash{K\leq\frac12n(n-1)}$. 
-We assume, without loss of generality, that the $w_k$ are positive. In non-metric
-MDS the loss function is minimized over both $x$ and $\delta$, where $\delta$
-is constrained to be in some known subset $\Delta$ of $\mathbb{R}^K$. For the ordinal 
-version of non-metric MDS, for example, we require $\delta_1\leq\cdots\leq\delta_K$.
+In *metric* least squares MDS the set $\Delta$ is a singleton, and MDS minimizes stress over $x$. In *non-metric*
+MDS the loss function is minimized over both $x$ and $\delta\in\Delta$. For the *ordinal* 
+version of non-metric MDS, for example, $\Delta$ consists of all vectors with $0\leq\delta_1\leq\cdots\leq\delta_K$.
 
-The Multidimensional Scaling (MDS) loss function *fStress* (@groenen_deleeuw_mathar_C_95) is defined as
+The Multidimensional Scaling (MDS) loss function *fStress* (@groenen_deleeuw_mathar_C_95) is a generalization of stress defined as
 \begin{equation}
-\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f_r(d_k(x)))^2,\label{eq-fdef}
+\sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-fdef}
 \end{equation}
-Suppose $f_r$ is a one-parameter family of real-valued functions defined on $[0,+\infty)$. The $f_r$ depend on a on a positive parameter $r$. We assume that for each $r>0$
+with $f$ is a known real-valued function defined on $(0,+\infty)$. We assume that
 
-* $f_r$ is strictly increasing on $[0,+\infty)$,
-* $f_r$ is continuously differentiable on $[0,+\infty)$,
-* $f_r(0) = 0$.
+* $f$ is strictly increasing on $(0,+\infty)$,
+* $f$ is continuously differentiable on $(0,+\infty)$.
 
-Thus $f_r(z)>0$ for all $z>0$ and $f_r$ has a continuously differentiable
-strictly increasing inverse. Some examples of $f$ are in the following table.
+Thus we do not require $f$ to be defined at zero. We do *not* assume, but recommend,
 
-```{r kabf, echo = FALSE, eval = TRUE}
-x <- matrix(c("log(rx + 1)", "r/(rx+1)", "(exp(y) - 1) / r", 
-              "x^r", "rx^{r - 1}", "y^{1 / r}",
-              "exp(rx) - 1", "r exp(rx)", "log(y + 1)/r"), 3, 3, byrow = TRUE)
+* $f(0)=0,$
+* $\lim_{x\rightarrow\infty}f(x)=\infty.$
 
-rn <- c("log", 
-       "power",
-       "exponent")
-row.names(x) <- rn
-cn <- c("f_r(x)", "f'_r(x)", "f_r^{-1}(y)")
-colnames(x) <- cn
-kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "f examples")
-```
+If $f$ is the identity we have Kruskal's
+stress, if $f$ is the square we have *sstress* used by @takane_young_deleeuw_A_77.
+If $f$ is the logarithm we have the loss function used by @ramsay_77.
 
-
-
-fStress was first introduced in @groenen_deleeuw_mathar_C_95. They give a slightly different
-definition of fStress.
+@groenen_deleeuw_mathar_C_95 give a slightly different
+definition of fStress. They use
 \begin{equation}
-\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f_r(d_k(x)))^2,\label{eq-fdef2}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f(d_k(x)))^2,\label{eq-fdef2}
 \end{equation}
-where the $\delta_k^0$ are observed dissimilarities. 
+where the $\delta_k^0$ are observed numerical dissimilarities. 
 For all practical purposes definitions \eqref{eq-fdef} and \eqref{eq-fdef2} are
-equivalent. In the metric case we simply use $\smash{\delta_k=f_r(\delta_k^0)}$
-in \eqref{eq-fdef} in preprocessing. In the ordinal case $\delta_k^0$ and $f_r(\delta_k^0)$
-are isotone, so the ordinal constraints for both defintions are the same.
-@groenen_deleeuw_mathar_C_95 give formulas for the first and second derivatives of fStress with respect to $x$.
+equivalent. In the metric case we simply use $\smash{\delta_k=f(\delta_k^0)}$
+in \eqref{eq-fdef} by preprocessing. In the ordinal case $\delta_k^0$ and $f_r(\delta_k^0)$
+are isotone, so the ordinal constraints in both definitions are the same.
 For our purposes it is important that they also show that at a local minimum
 of fStress we have $d_k(x)>0$ for all $k$ for which $w_k\delta_k>0$, generalizing
 the result for stress proved by @deleeuw_A_84f.
 No explicit algorithm to minimize fStress was given, but the formulas for the first 
-and second derivatives (see @deleeuw_E_17r for derivatives up to order four) can of course be used in 
-general-purpose optimization routines.
+and second derivatives in @groenen_deleeuw_mathar_C_95 can of course be used in general-purpose optimization routines.
 
 An important special case of fStress is *rStress* (also known as *powerStress*), which is
 \begin{equation}
 \sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k^r(x))^2\label{eq-rdef}
 \end{equation}
-Special cases of rStress are Kruskal's stress (@kruskal_64a, @kruskal_64b) with $r=1$, sstress by @takane_young_deleeuw_A_77 with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ by @ramsay_77. There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
+Both Kruskal's stress with $r=1$, sstress with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ are again special cases. There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
 
- 
-Since $f$ is increasing, we can write fStress simply as
-\begin{equation}
-\sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-nmfdef}
-\end{equation}
-where $\delta$ is no longer a vector of known dissimilarities, but any vector
-monotone with the dissimilarities. These transformed or scaled dissimilarities
-are often called *disparities*. Non-metric rStress is simply \eqref{eq-nmfdef}
-with $\smash{f(d_k(x))=d_k^r(x)}$.
-
-In order to exclude the trivial solution
-with $x=0$ and $\delta=0$ in addition we impose the normalization constraint
+In non-metric MDS we need to exclude the trivial solution
+with $x=0$ and $\delta=0$. This is done by imposing the normalization constraint
 \begin{equation}
 \eta^2(\delta):=\frac12\sum_{k=1}^Kw_k\delta_k^2=1.\label{eq-normal}
 \end{equation}
-This formulation of non-metric MDS can be generalized to $\delta\in\Delta$,
-where $\Delta$ is a convex cone in $\mathbb{R}^K$. This means we require
-the disparities to be in the intersection of the cone $\Delta$ and the sphere $\Sigma$ defined
-by \eqref{eq-normal}.
-
-It is convenient to think of metric MDS as the special case in which the 
-set $\Delta$ is the one-element set containing only the normalized dissimilarities
-$\delta$. Alternatively, as in smacof, we can choose for $\Delta$ the ray of all vectors
-that are non-negative multiples of the dissimilarities. In other words our metric
-MDS treats the dissimilarities as measured on a ratio scale.
-
+It is important to observe that for rStress we have homogeneity
 
 # Algorithm
 
@@ -351,12 +315,9 @@ from $y$ is equal to zero. Again, this eventuality must be monitored.
 
 # Software
 
-The C function smacofSSRStress() in the file smacofSSFStress.c does either metric or ordinal MDS minimizing fStress for an arbitrary $f$. 
+The C function smacofSSRStressC() in the file smacofSSFStressC.c does either metric or ordinal MDS minimizing fStress for an arbitrary $f$. The C code is compiled into a shared library smacofSSFStress.so, which is loaded by the R front-end smacofSSFStressC.R
 
-The C code is compiled into a shared library smacofSSFStress.so, which is loaded by the R front-end smacofSSFStress.R
-that contains smacofSSRStress().
-
-
+smacofSSRStressC()
 
 ## Data
 
@@ -391,6 +352,24 @@ $$
 Our initial estimate is $\hat\lambda x$ with distances $\hat\lambda d_k(x)$. This scaling is done also if xinit is not NULL.
 
 ## Functions
+
+Some examples of $f$ are in the following table.
+
+```{r kabf, echo = FALSE, eval = TRUE}
+x <- matrix(c("log(rx + 1)", "r/(rx+1)", "(exp(y) - 1) / r", 
+              "x^r", "rx^{r - 1}", "y^{1 / r}",
+              "exp(rx) - 1", "r exp(rx)", "log(y + 1)/r"), 3, 3, byrow = TRUE)
+
+rn <- c("log", 
+       "power",
+       "exponent")
+row.names(x) <- rn
+cn <- c("f_r(x)", "f'_r(x)", "f_r^{-1}(y)")
+colnames(x) <- cn
+kable(x, format = "simple", align = NULL, row.names = TRUE, caption = "f examples")
+```
+
+
 
 smacofSSFStressSelect.R
 
@@ -467,7 +446,7 @@ function(h, main = "ConfigurationPlot", labels = NULL, dim1 = 1,
 ```
 A Shepard plot (@deleeuw_mair_C_15) traditionally plots dissimilarities on the
 horizontal axis, and both disparities and distances on the vertical axis.
-The $(delta,dhat)$ points are connected by a straight line through the origin in the metric case and by an increasing step function in the ordinal case. The $(delta,dist)$ points
+The $(\delta_k^0,\delta_k)$ points are connected by a straight line through the origin in the metric case and by an increasing step function in the ordinal case. The $(delta,dist)$ points
 are optionally connected with vertical "fitlines" to the corresponding $(delta,dhat)$ points.
 ```{r eval = FALSE}
 function(h, main = "ShepardPlot", fitlines = TRUE, colline = "RED", 
@@ -492,10 +471,17 @@ function (h, main = "ResidualPlot", probs = seq(0, 1, 0.25),
     collines = "BLUE", lwdpoints = 2, lwdlines = 2, cex = 1, 
     pch = 16) 
 ```
+
+As in the previous plots *type* computes residuals as 
+
+*whatplot* can have the values *ecdf* (default) or *density*. R functions
+
+*dats* chooses to plot the residual (default), its absolute value, or its square
+
 # Examples
 
-We analyse the colour data from @ekman_54 with different functions $f$, first 
-using smacofSSFStressR(), then using smacofSSFStressC().
+We analyse the colour data from @ekman_54 with different functions $f$, using both 
+smacofSSFStressR() and using smacofSSFStressC().
 
 ```{r rfstressruns, echo = FALSE, cache = FALSE}
 hl <- smacofSSFStressR(ekmanData, what = 1, verbose = FALSE)

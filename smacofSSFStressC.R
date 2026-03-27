@@ -27,6 +27,7 @@ smacofSSFStressC <- function(theData,
   blks <- theData$blocks
   delt <- theData$delta
   wght <- theData$weights / sum(theData$weights)
+  labl <- theData$label
   if (what == 0) {
     func <- function(x, r) x ^ r
   }
@@ -35,6 +36,9 @@ smacofSSFStressC <- function(theData,
   }
   if (what == 2) {
     func <- function(x, r) exp(r * x) - 1
+  }
+  if (what == 3) {
+    func <- function(x, r) r * log(x)
   }
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
@@ -99,7 +103,8 @@ smacofSSFStressC <- function(theData,
     ordi = ordinal,
     ties = h$ties,
     what = what,
-    rpow = rpow
+    rpow = rpow,
+    labl = labl
   )
   return(result)
 }
