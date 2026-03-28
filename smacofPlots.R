@@ -5,7 +5,6 @@ smacofShepardPlot <-
            fitlines = TRUE,
            colline = "RED",
            colpoint = "BLUE",
-           type = 0,
            lwd = 2,
            cex = 1,
            pch = 16) {
@@ -15,19 +14,17 @@ smacofShepardPlot <-
     del <- h$delt
     dis <- h$dist
     dht <- h$dhat
-    if (type == 0) {
+    dss <- h$diss
+    if (dss == 0) {
       x <- hfnc$func(del, rpow)
-      y <- dht
-      z <- hfnc$func(dis, rpow)
       xlab <- "f(delta)"
-      ylab <- "dhat and f(dist)"
     } else {
       x <- del
-      y <- hfnc$finv(dht, rpow)
-      z <- dis
-      xlab <- "delta"
-      ylab <- "finv(dhat) and dist"
+      xlab = "delta"
     }
+    y <- dht
+    z <- hfnc$func(dis, rpow)
+    ylab <- "dhat and f(dist)"
     main <- paste("ShepardPlot ", h$labl, ", what = ", what, ", rpow = ", rpow, sep = "")
     if (h$ordi) {
       main <- paste(main, ", ordinal", sep = "")
@@ -74,7 +71,13 @@ smacofConfigurationPlot <-
            col = "RED",
            cex = 1.0) {
     xmat <- h$xmat
-    main <- paste("Configuration Plot ", h$labl, ", what = ", what, ", rpow = ", rpow, sep = "")
+    main <- paste("Configuration Plot ",
+                  h$labl,
+                  ", what = ",
+                  what,
+                  ", rpow = ",
+                  rpow,
+                  sep = "")
     if (h$ordi) {
       main <- paste(main, ", ordinal", sep = "")
     } else {
@@ -107,24 +110,16 @@ smacofDistDhatPlot <- function(h,
                                fitlines = TRUE,
                                colline = "RED",
                                colpoint = "BLUE",
-                               type = 0,
                                cex = 1.0,
                                lwd = 2,
                                pch = 16) {
   what <- h$what
   rpow <- h$rpow
   hfnc <- smacofSSFStressSelect(what)
-  if (type == 0) {
-    x <- hfnc$func(h$dist, rpow)
-    y <- h$dhat
-    xlab <- "f(dist)"
-    ylab <- "dhat"
-  } else {
-    x <- h$dist
-    y <- hfnc$finv(h$dhat, rpow)
-    xlab <- "dist"
-    ylab <- "finv(dhat)"
-  }
+  x <- hfnc$func(h$dist, rpow)
+  y <- h$dhat
+  xlab <- "f(dist)"
+  ylab <- "dhat"
   main <- paste("DistDhatPlot ", h$labl, ", what = ", what, ", rpow = ", rpow, sep = "")
   if (h$ordi) {
     main <- paste(main, ", ordinal", sep = "")
@@ -161,7 +156,6 @@ smacofResidualPlot <- function(h,
                                probs = seq(0, 1, 0.25),
                                whatres = 1,
                                whatplot = 1,
-                               type = 0,
                                qlines = TRUE,
                                colpoints = "RED",
                                collines = "BLUE",
@@ -172,11 +166,7 @@ smacofResidualPlot <- function(h,
   what <- h$what
   rpow <- h$rpow
   hfnc <- smacofSSFStressSelect(what)
-  if (type == 0) {
-    res <- hfnc$func(h$dist, rpow) - h$dhat
-  } else {
-    res <- h$dist - hfnc$finv(h$dhat, rpow)
-  }
+  res <- hfnc$func(h$dist, rpow) - h$dhat
   res <- switch(whatres, res, abs(res), res^2)
   q <- quantile(res, probs)
   n <- length(q)
