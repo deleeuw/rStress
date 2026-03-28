@@ -13,6 +13,7 @@ smacofSSFStressC <- function(theData,
                             xinit = NULL,
                             ties = 1,
                             itmax = 10000,
+                            diss = 0,
                             eps = 1e-6,
                             what = 0,
                             rpow = 1,
@@ -28,18 +29,8 @@ smacofSSFStressC <- function(theData,
   delt <- theData$delta
   wght <- theData$weights / sum(theData$weights)
   labl <- theData$label
-  if (what == 0) {
-    func <- function(x, r) x ^ r
-  }
-  if (what == 1) {
-    func <- function(x, r) log(r * x + 1)
-  }
-  if (what == 2) {
-    func <- function(x, r) exp(r * x) - 1
-  }
-  if (what == 3) {
-    func <- function(x, r) r * log(x)
-  }
+  h <- smacofSSFStressSelect(what)
+  func <- h$func
   if (is.null(xinit)) {
     xold <- smacofTorgerson(theData, ndim)$conf
   } else {
@@ -51,11 +42,15 @@ smacofSSFStressC <- function(theData,
     j <- jind[k]
     dold[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
   }
-  labd <- sum(wght * dold * delt) / sum(wght * dold ^ 2)
+  if (diss == 0) {
+    dhat <- func(delt, rpow)
+  } else {
+    dhat <- delt
+  }
+  dhat <- dhat / sqrt(sum(wght * dhat^2))
+  labd <- sum(wght * dold * dhat) / sum(wght * dold ^ 2)
   xold <- xold * labd
   dold <- dold * labd
-  dhat <- func(delt, rpow)
-  dhat <- dhat / sqrt(sum(wght * dhat^2))
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   snew <- 0.0
@@ -104,7 +99,9 @@ smacofSSFStressC <- function(theData,
     ties = h$ties,
     what = what,
     rpow = rpow,
-    labl = labl
+    labl = labl,
+    diss = diss,
+    date = date()
   )
   return(result)
 }

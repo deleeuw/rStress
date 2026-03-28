@@ -2,7 +2,7 @@ source("smacofDataUtilities.R")
 
 data(morse, package = "smacof")
 morseLabels <- as.character(attr(morse, "Labels"))
-morseData <- makeMDSData(morse)
+morseData <- makeMDSData(morse, label = "morseData")
 morseMatrix <- as.matrix(morse)
 imorse <- morseMatrix^2
 rmorse <- apply(imorse, 1, mean)

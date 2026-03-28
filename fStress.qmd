@@ -430,32 +430,47 @@ list(
 
 The four standard plots that come with the recent smacof programs () are
 
-* smacofConfigurationPlot
-* smacofShepardPlot
-* smacofDistDhatPlot
-* smacofResidualPlot
+* smacofConfigurationPlot()
+* smacofShepardPlot()
+* smacofDistDhatPlot()
+* smacofResidualPlot()
 
-The output list of smacofSSFStress() can be fed immediately into these four plot routines.
-They only have side effects (i.e. make a plot) and return NULL.
+The output list of smacofSSFStress() can be fed immediately into these four plot routines. They only have side effects (i.e. make a plot) and return NULL.
 
-It is easy to see what smacofConfigurationPlot() does. It plots a two-dimensional
+###  smacofConfigurationPlot()
+
+It is easy to explain what smacofConfigurationPlot() does. It plots a two-dimensional
 projection of the configuration. Its arguments are self-explanatory.
 ```{r eval = FALSE}
-function(h, main = "ConfigurationPlot", labels = NULL, dim1 = 1, 
-    dim2 = 2, pch = 16, col = "RED", cex = 1) 
+function(h, labels = NULL, dim1 = 1, 
+         dim2 = 2, pch = 16, col = "RED", cex = 1) 
 ```
-A Shepard plot (@deleeuw_mair_C_15) traditionally plots dissimilarities on the
-horizontal axis, and both disparities and distances on the vertical axis.
+
+### smacofShepardPlot()
+
+A Shepard plot (@deleeuw_mair_C_15) traditionally plots observed dissimilarities on the horizontal axis, and both disparities and distances on the vertical axis.
 The $(\delta_k^0,\delta_k)$ points are connected by a straight line through the origin in the metric case and by an increasing step function in the ordinal case. The $(delta,dist)$ points
 are optionally connected with vertical "fitlines" to the corresponding $(delta,dhat)$ points.
 ```{r eval = FALSE}
 function(h, main = "ShepardPlot", fitlines = TRUE, colline = "RED", 
     colpoint = "BLUE", type = 0, lwd = 2, cex = 1, pch = 16) 
 ```
+
+In the fStress solution it makes sense to put the final $\delta$ and 
+$f(d(x))$ on the vertical axis, but there is some ambiguity on what
+we use on the horizontal axis. As explained in the introduction in metric MDS we can have $\delta\propto f(\delta^0)$, with $\delta^0$ observed dissimilarities.
+In that case we put $f(\delta^0)$ on the horizontal axis, and
+the the points $f(\delta_k^0),\delta_k$ are on a straight line.
+
+In the numerical case do we analyze $\delta=f(\delta^0)$ or $\delta=\delta^0$.
+In the ordinal case: it does not make a difference, except for the plots
+
 In the fStress context there is an extra arguments "type".
 Remember that the list h has both a "what" and an "rpow" element.
 The "type" argument is either one or zero. If it is zero (the default) then
 we plot $f(\delta_k)$ on the horizontal axis and $\hat d_k$ and $f(d_k(x))$ on the vertical axis. If "type" is equal to one then we plot $\delta_k$ on the horizontal axis and $f^{-1}(\hat d_k)$ and $d_k(x)$ on the vertical axis.
+
+### smacofDistDhatPlot()
 
 smacofDistDhatPlot() has arguments
 ```{r eval = FALSE}
@@ -464,19 +479,21 @@ function(h, fitlines = TRUE, colline = "RED", colpoint = "BLUE",
 ```
 The "type" parameter works in the same way as in the Shepard plot.
 
+### smacofResidualPlot()
+
 smacofResidualPlot() is more complicated. It has arguments
 ```{r eval = FALSE}
 function (h, main = "ResidualPlot", probs = seq(0, 1, 0.25), 
-    dats = 1, whatplot = "ecdf", type = 0, qlines = TRUE, colpoints = "RED", 
+    whatres = 1, whatplot = 1, type = 0, qlines = TRUE, colpoints = "RED", 
     collines = "BLUE", lwdpoints = 2, lwdlines = 2, cex = 1, 
     pch = 16) 
 ```
 
 As in the previous plots *type* computes residuals as 
 
-*whatplot* can have the values *ecdf* (default) or *density*. R functions
+*whatplot* can have the values *ecdf* (default) or *density*. Computation is done with the ecdf() and density() functions from the stats package.
 
-*dats* chooses to plot the residual (default), its absolute value, or its square
+*whatres* chooses to plot the residual (default), its absolute value, or its square
 
 # Examples
 

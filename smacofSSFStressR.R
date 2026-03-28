@@ -11,6 +11,7 @@ smacofSSFStressR <- function(theData,
                              ties = 1,
                              itmax = 10000,
                              eps = 1e-6,
+                             diss = 0,
                              what = 0,
                              rpow = 1,
                              digits = 8,
@@ -39,11 +40,15 @@ smacofSSFStressR <- function(theData,
     j <- jind[k]
     dold[k] <- sqrt(sum((xold[i, ] - xold[j, ])^2))
   }
-  labd <- sum(wght * dold * delt) / sum(wght * dold^2)
+  if (diss == 0) {
+    dhat <- func(delt, rpow)
+  } else {
+    dhat <- delt
+  }
+  dhat <- dhat / sqrt(sum(wght * dhat^2))
+  labd <- sum(wght * dold * dhat) / sum(wght * dold^2)
   xold <- xold * labd
   dold <- dold * labd
-  dhat <- func(delt, rpow)
-  dhat <- dhat / sqrt(sum(wght * dhat^2))
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
   itel <- 1
   repeat {
@@ -204,7 +209,9 @@ smacofSSFStressR <- function(theData,
     ties = ties,
     what = what,
     rpow = rpow,
-    labl = labl
+    labl = labl, 
+    diss = diss,
+    date = date()
   )
   return(result)
 }

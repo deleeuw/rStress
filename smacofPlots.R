@@ -160,7 +160,7 @@ smacofDistDhatPlot <- function(h,
 smacofResidualPlot <- function(h,
                                probs = seq(0, 1, 0.25),
                                whatres = 1,
-                               whatplot = "ecdf",
+                               whatplot = 1,
                                type = 0,
                                qlines = TRUE,
                                colpoints = "RED",
@@ -180,7 +180,7 @@ smacofResidualPlot <- function(h,
   res <- switch(whatres, res, abs(res), res^2)
   q <- quantile(res, probs)
   n <- length(q)
-  e <- switch(whatplot, "ecdf" = ecdf(res), "density" = density(res))
+  e <- switch(whatplot, ecdf(res), density(res))
   main <- paste("ResidualPlot ", h$labl, ", what = ", what, ", rpow = ", rpow, sep = "")
   if (h$ordi) {
     main <- paste(main, ", ordinal", sep = "")
