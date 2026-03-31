@@ -16,6 +16,7 @@ void smacofSSSMatrixPrint(double* mat, int* nobj, int* ndat, int* iind,
         printf("\n");
     }
     printf("\n\n");
+    xfree(out);
     return;
 }
 

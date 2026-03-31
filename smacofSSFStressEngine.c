@@ -98,6 +98,7 @@ void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
     xfree(vaux);
     xfree(baux);
     xfree(daux);
+    xfree(waux);
     xfree(fval);
     xfree(gval);
     return;

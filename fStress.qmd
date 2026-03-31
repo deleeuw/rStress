@@ -70,73 +70,123 @@ appreciated, but is not required. The files can be found at
 
 # Loss Functions
 
-The Multidimensional Scaling (MDS) loss function *stress*, originally proposed by @kruskal_64a, @kruskal_64b, is defined as
+Metric Multidimensional Scaling (MDS) minimizes the loss function *(raw) stress*, originally proposed by @kruskal_64a, @kruskal_64b. Stress is
 \begin{equation}
-\sigma(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
+\sigma(x):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
 \end{equation}
 In definition \eqref{eq-stressdef} 
 
 * $w$ is a vector of $K$ known positive *weights*;
-* $\delta\in\Delta$, with $\Delta$ a set of $K$-element vectors with non-negative *dissimilarities*;
-* $x:=\text{vec}(X)$, with $X$ the *configuration*, an $n\times p$ matrix of $n$ *points*
-in $p$ *dimensions*;
+* $\delta$ is a vector of $K$ known non-negative *dissimilarities*;
+* $x:=\text{vec}(X)$, with $X$ the *configuration*, an $n\times p$ matrix of $n$ *points* in $p$ *dimensions*;
 * $d(x)$ are $K$ Euclidean *distances* between some or all pairs of points. 
 
-Thus $K\leq\frac12n(n -1)$. For each $1\leq k\leq K$ there is a pair of indices $(i,j)$ with $1\leq i<j\leq n$
-and a block-diagonal matrix $A_k$, which is the direct sum of $p$ copies of $(e_i-e_j)(e_i-e_j)'$,
-where the $e_i$ are unit vectors (columns of the identity matrix of order $n$).
-Thus $\smash{d_k(x)=\sqrt{x'A_kx}}$. 
-
-In *metric* least squares MDS the set $\Delta$ is a singleton, and MDS minimizes stress over $x$. In *non-metric*
-MDS the loss function is minimized over both $x$ and $\delta\in\Delta$. For the *ordinal* 
-version of non-metric MDS, for example, $\Delta$ consists of all vectors with $0\leq\delta_1\leq\cdots\leq\delta_K$.
-
-The Multidimensional Scaling (MDS) loss function *fStress* (@groenen_deleeuw_mathar_C_95) is a generalization of stress defined as
+Thus $K\leq\frac12n(n -1)$. Our notation is slighty non-standard, because we
+use vectors in our definition, and not matrices. For each $1\leq k\leq K$ there is a pair of indices $(i(k),j(k))$ with $1\leq i(k)<j(k)\leq n$
+and a block-diagonal matrix $A_k$, which is the direct sum of $p$ copies of $(e_{i(k)}-e_{j(k)})(e_{i(k)}-e_{j(k)})'$, where the $e_i$ are unit vectors (columns of the identity matrix of order $n$). 
+In an example with $n=4$ and $p=2$ if $(i(k),j(k))$ is $(2,4)$ then
 \begin{equation}
-\sigma_f(x,\delta):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2,\label{eq-fdef}
+A_k=\begin{array}{rrrrrrrr}
+0&0&0&0&0&0&0&0\\
+0&+1&0&-1&0&0&0&0\\
+0&0&0&0&0&0&0&0\\
+0&-1&0&+1&0&0&0&0\\
+0&0&0&0&0&0&0&0\\
+0&0&0&0&0&+1&0&-1\\
+0&0&0&0&0&0&0&0\\
+0&0&0&0&0&-1&0&+1
+\end{array}.
 \end{equation}
-with $f$ is a known real-valued function defined on $(0,+\infty)$. We assume that
+The $A_k$, together with $x=\text{vec}(X)$, allow us to conveniently write $\smash{d_k(x)=\sqrt{x'A_kx}}$.
 
-* $f$ is strictly increasing on $(0,+\infty)$,
-* $f$ is continuously differentiable on $(0,+\infty)$.
+Non-metric MDS ...
 
-Thus we do not require $f$ to be defined at zero. We do *not* assume, but recommend,
 
-* $f(0)=0,$
-* $\lim_{x\rightarrow\infty}f(x)=\infty.$
+## Metric fStress
 
-If $f$ is the identity we have Kruskal's
-stress, if $f$ is the square we have *sstress* used by @takane_young_deleeuw_A_77.
-If $f$ is the logarithm we have the loss function used by @ramsay_77.
-
-@groenen_deleeuw_mathar_C_95 give a slightly different
-definition of fStress. They use
+@groenen_deleeuw_mathar_C_95 propose a generalization of stress called *fStress*. It is defined as
 \begin{equation}
-\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f_r(\delta_k^0)-f(d_k(x)))^2,\label{eq-fdef2}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef1}
 \end{equation}
-where the $\delta_k^0$ are observed numerical dissimilarities. 
-For all practical purposes definitions \eqref{eq-fdef} and \eqref{eq-fdef2} are
-equivalent. In the metric case we simply use $\smash{\delta_k=f(\delta_k^0)}$
-in \eqref{eq-fdef} by preprocessing. In the ordinal case $\delta_k^0$ and $f_r(\delta_k^0)$
-are isotone, so the ordinal constraints in both definitions are the same.
-For our purposes it is important that they also show that at a local minimum
+with $f$ a known real-valued function defined on $(0,+\infty)$. We assume that
+
+1. $f$ is strictly increasing on $(0,+\infty)$,
+2. $f$ is continuously differentiable on $(0,+\infty)$.
+
+Thus we do *not* require $f$ to be defined at zero. We also do *not* require, but recommend,
+
+3. $f(0)=0,$
+4. $\lim_{x\rightarrow\infty}f(x)=\infty,$
+5. $f$ is positively homogeneous, i.e. $f(\lambda x)=\lambda^\mu f(x)$ 
+for all $\lambda\geq 0$ and for some $\mu>0$.
+
+Note that (5) implies (3) and (4). Power functions $x^r$ with $r>0$ clearly
+satisfy all our five required and recommended conditions.  An example which does not satisfy recommended conditions (3) and (5) is the logarithm, which defines the loss function used by @ramsay_77. An example of an $f$ that does not satisfy (4) and (5) is the arctangent, bounded by $\pi/2$ as $x\rightarrow\infty$.
+
+For our purposes it is important that @groenen_deleeuw_mathar_C_95 show that at a local minimum
 of fStress we have $d_k(x)>0$ for all $k$ for which $w_k\delta_k>0$, generalizing
-the result for stress proved by @deleeuw_A_84f.
-No explicit algorithm to minimize fStress was given, but the formulas for the first 
-and second derivatives in @groenen_deleeuw_mathar_C_95 can of course be used in general-purpose optimization routines.
+the result for stress proved by @deleeuw_A_84f. Thus, under weak conditions
+on the input weights and dissimilarities, fStress is differentiable at
+local minima.
+@groenen_deleeuw_mathar_C_95 give no explicit algorithm to minimize fStress, but they do derive formulas for the first 
+and second derivatives, which can of course be used in general-purpose optimization routines.
 
-An important special case of fStress is *rStress* (also known as *powerStress*), which is
+The important special case of fStress with $f$ a power function is called *rStress* (also known as *powerStress*). It is
 \begin{equation}
 \sigma_r(x):=\frac12\sum_{k=1}^K w_k(\delta_k-d_k^r(x))^2\label{eq-rdef}
 \end{equation}
-Both Kruskal's stress with $r=1$, sstress with $r=2$, and the limiting case logarithmic stress with $r\rightarrow 0$ are again special cases. There have been various attempts to extend the majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
-
-In non-metric MDS we need to exclude the trivial solution
-with $x=0$ and $\delta=0$. This is done by imposing the normalization constraint
+If $r=1$ we have Kruskal's stress, if $r=2$ we have *sstress* used by @takane_young_deleeuw_A_77. Using
 \begin{equation}
-\eta^2(\delta):=\frac12\sum_{k=1}^Kw_k\delta_k^2=1.\label{eq-normal}
+\log(x)=\lim_{r\rightarrow 0}\frac{x^r-1}{r}\label{eq-loglim}
 \end{equation}
+shows that the logarithmic loss function used by @ramsay_77 is a limiting case of rStress. 
+There have been various attempts to extend the smacof majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
+
+Alternatively we could have defined fStress as
+\begin{equation}
+\sigma_f(x):=\frac12\sum_{k=1}^K w_k(\delta_k-f(d_k(x)))^2.\label{eq-fdef2}
+\end{equation}
+From the computational point of view is does not matter whether we use
+\eqref{eq-fdef1} or \eqref{eq-fdef2}. The $\delta_k$ are fixed numbers,
+and consequenty so are the $f(\delta_k)$. The minimization problem is the same. From the interpretational point of view there is a difference, however.
+In minimizing fStress from \eqref{eq-fdef2} we approximate the dissimilarities $\delta$ by the transformed distances $f(d(x))$. Minimizing \eqref{eq-fdef1}
+on the other hand can be interpreted as approximating dissimilarities $\delta$ by distances $d(x)$ with a weighted least squares loss function, with $f$
+acting in the same way as the weights $w$. This can be seen most clearly if the fit is good, i.e. when
+$\delta$ and $d(x)$ are close. We can then approximate fStress from \eqref{eq-fdef1}
+as in
+\begin{equation}
+\sigma_f(x)\approx\frac12\sum_{k=1}^K w_k\{f'(\delta_k)\}^2(\delta_k-d_k(x))^2.
+\end{equation}
+
+## Non-metric fStress
+
+In non-metric MDS we minimize stress or fStress not only over $x$ but also
+over $\delta$, where $\delta$ is constrained to be in some subset $\Delta$
+of $\mathbb{R}^K$. The most common case is ordinal MDS, where $\Delta$
+is defined by the inequalities $\delta_1\leq\cdots\leq\delta_k$.
+In the ordinal case again it does not matter computationally if we minimize
+\eqref{eq-fdef1} or \eqref{eq-fdef2}. Vectors $\delta$ and $f(\delta)$
+are isotone, so the ordinal constraints in both minimization problems are the same.
+
+In versions of non-metric MDS in which $\Delta$ is a cone and $f$ is
+homogeneous of some degree we need a way to exclude the trivial solution with $x=0$ and $\delta=0$. This is usually done by imposing a *normalization constraint*
+on $\delta$ or $d(x)$. To cover all cases we redefine fStress as
+\begin{equation}
+\sigma(x,\hat d):=\frac12\sum_{k=1}^Kw_k(\hat d_k-f(d_k(x)))^2,\label{eq-dhat}
+\end{equation}
+and we require that $\hat d\in\Delta\cap S$, where $S$ is the sphere
+\begin{equation}
+\frac12\sum_{k=1}^Kw_k\hat d_k^2=1.\label{eq-normal}
+\end{equation}
+In the metric case $\hat d$ is a normalized version of either $\delta$ or $f(\delta)$, in the non-metric case it can be any vector in $\Delta\cap S$.
+
 It is important to observe that for rStress we have homogeneity
+
+
+
+
+
+\sectionbreak
 
 # Algorithm
 
@@ -312,6 +362,8 @@ convergence of loss function values will only happen if the approximation is goo
 $d(x^{(\mu+1)})$ is close to $d_k(x^{(\mu)})$. This requires closer monitoring of convergence than 
 in smacof. Also note that if $\tilde\delta_k(y)<0$ for all $k$ then $B(y)=0$, which means that the update 
 from $y$ is equal to zero. Again, this eventuality must be monitored.
+
+\sectionbreak
 
 # Software
 
@@ -494,6 +546,8 @@ As in the previous plots *type* computes residuals as
 *whatplot* can have the values *ecdf* (default) or *density*. Computation is done with the ecdf() and density() functions from the stats package.
 
 *whatres* chooses to plot the residual (default), its absolute value, or its square
+
+\sectionbreak
 
 # Examples
 
