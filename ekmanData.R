@@ -13,4 +13,3 @@ ckman <- -(ikman - outer(rkman, rkman, "+") + mkman) / 2
 skman <- eigen(ckman)
 xinit <- skman$vectors[, 1:2] %*% diag(sqrt(skman$values[1:2]))
 
-

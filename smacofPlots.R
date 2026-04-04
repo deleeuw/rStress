@@ -14,8 +14,13 @@ smacofShepardPlot <-
     del <- h$delt
     dis <- h$dist
     dht <- h$dhat
-    x <- switch(h$usef + 1, del, hfnc$func(del, rpow))
-    xlab <- switch(h$usef + 1, "delta", "f(delta)")
+    if (h$ordi) {
+      x <- hfnc$func(del, rpow)
+      xlab <- "f(delta)"
+    } else {
+      x <- dht
+      xlab <- "dhat"
+    }
     y <- dht
     z <- hfnc$func(dis, rpow)
     ylab <- "dhat and f(dist)"

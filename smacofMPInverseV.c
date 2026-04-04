@@ -2,28 +2,6 @@
 
 #include "smacofSSFStress.h"
 
-/*
-int nobj = 3, ndat = 3, ntot = 6;
-int iind[3] = {2, 1, 2};
-int jind[3] = {0, 0, 1};
-int width = 10;
-int digits = 6;
-double wght[3] = {3.0, 2.0, 3.0};
-double vinv[6] = {0};
-
-int main(void) {
-    (void)smacofMPInverseV(&nobj, &ndat, iind, jind, wght, vinv);
-    (void)smacofSSVectorPrint(wght, &ndat, &width, &digits);
-    (void)smacofSSVectorPrint(vinv, &ntot, &width, &digits);
-    return EXIT_SUCCESS;
-}
-*/
-
-/*
-clang -o tester smacofMPInverseV.c smacofSSPrint.c syminv.c cholesky.c
-timestamp.c
-*/
-
 void smacofMPInverseV(const int* nobj, const int* ndat, const int* iind,
                       const int* jind, const double* wght, double* vinv) {
     int Nobj = *nobj, Ndat = *ndat;

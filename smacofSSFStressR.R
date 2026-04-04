@@ -1,4 +1,5 @@
 
+
 source("smacofTorgerson.R")
 source("smacofSSFStressSelect.R")
 
@@ -11,7 +12,6 @@ smacofSSFStressR <- function(theData,
                              ties = 1,
                              itmax = 10000,
                              eps = 1e-6,
-                             usef = 1,
                              what = 0,
                              rpow = 1,
                              digits = 8,
@@ -40,15 +40,13 @@ smacofSSFStressR <- function(theData,
   h <- smacofSSFStressSelect(what)
   func <- h$func
   gunc <- h$gunc
-  if (usef == 1) {
-    dhat <- func(delt, rpow)
-  } else {
-    dhat <- delt
-  }
+  dhat <- func(delt, rpow)
   if (ordinal) {
     dhat <- dhat / sqrt(sum(wght * dhat^2))
   }
-  labd <- sum(wght * dold * dhat) / sum(wght * dold^2)
+  waux <- wght * gunc(delt, rpow)^2
+  waux <- waux / sum(waux)
+  labd <- sum(waux * dold * delt) / sum(waux * dold^2)
   xold <- xold * labd
   dold <- dold * labd
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
@@ -74,7 +72,7 @@ smacofSSFStressR <- function(theData,
     bmat <- -bmat
     diag(vmat) <- -rowSums(vmat)
     diag(bmat) <- -rowSums(bmat)
-    vinv <- solve(vmat + (1/nobj)) - (1 / nobj)
+    vinv <- solve(vmat + (1 / nobj)) - (1 / nobj)
     xnew <- vinv %*% bmat %*% xold
     dnew <- rep(0, ndat)
     for (k in 1:ndat) {
@@ -88,7 +86,12 @@ smacofSSFStressR <- function(theData,
     tnew <- sum(waux * (daux - dnew)^2)
     if (ordinal) {
       tchr <- switch(ties, "primary", "secondary", "tertiary")
-      dhat <- gpava(z = delt, y = fdis, weights = wght, ties = tchr)$x
+      dhat <- gpava(
+        z = delt,
+        y = fdis,
+        weights = wght,
+        ties = tchr
+      )$x
       dhat <- dhat / sqrt(sum(wght * dhat^2))
       snew <- sum(wght * (dhat - fdis)^2)
     } else {
@@ -211,8 +214,7 @@ smacofSSFStressR <- function(theData,
     ties = ties,
     what = what,
     rpow = rpow,
-    labl = labl, 
-    usef = usef,
+    labl = labl,
     date = date()
   )
   return(result)

@@ -1,0 +1,95 @@
+
+> source("~/Desktop/recents/fStress/runner.R")
+          itel      fStress
+logarithm  154 0.0041808792
+power .1   804 0.0002571964
+power .5   227 0.0046666093
+power 1     35 0.0116011608
+power 2     49 0.0182350822
+power 5    793 0.0080274939
+exponent    36 0.0451130982
+          itel      fStress
+logarithm  154 0.0041808792
+power .1   804 0.0002571964
+power .5   227 0.0046666093
+power 1     35 0.0116011608
+power 2     49 0.0182350822
+power 5    793 0.0080274939
+exponent    36 0.0451130982
+            itel      fStress
+logarithm    336 2.466493e-04
+power .1     980 6.567816e-06
+power .5     213 1.651214e-04
+power 1      141 5.337258e-04
+power 2      231 9.014502e-04
+power 5     2625 1.100227e-03
+exponential  159 7.894837e-04
+cld calculation took more than 5 seconds
+  set include_cld = FALSE to skip the cld calculation
+Unit: microseconds
+                                                     expr       min         lq       mean     median
+   smacofSSFStressR(ekmanData, what = 1, verbose = FALSE) 14269.353 14809.2820 15607.7033 14992.4290
+   smacofSSFStressC(ekmanData, what = 1, verbose = FALSE)   518.978   562.6020   641.9751   575.4145
+ smacofSSFStressR(ekmanData, rpow = 0.1, verbose = FALSE) 78345.752 79976.3015 82263.6411 80865.2840
+ smacofSSFStressC(ekmanData, rpow = 0.1, verbose = FALSE)  2777.340  2937.9985  2975.1908  2983.5700
+ smacofSSFStressR(ekmanData, rpow = 0.5, verbose = FALSE) 21108.440 21911.8145 23104.9194 22245.4110
+ smacofSSFStressC(ekmanData, rpow = 0.5, verbose = FALSE)   967.805  1023.7905  1101.6556  1039.5345
+   smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE)  3452.487  3586.5775  3879.9920  3641.1075
+   smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE)   327.795   357.2125   377.1799   365.6995
+   smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)  4680.929  4884.5145  5316.2597  4946.7730
+   smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE)   386.179   422.8945   443.1883   430.7460
+   smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE) 77366.385 78882.6470 81254.9111 79642.8485
+   smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE)  2623.139  2866.9250  2896.7131  2899.8480
+   smacofSSFStressR(ekmanData, what = 2, verbose = FALSE)  3443.098  3661.4845  3903.2238  3707.3020
+   smacofSSFStressC(ekmanData, what = 2, verbose = FALSE)   302.006   330.0295   350.0240   340.1155
+         uq        max neval    cld
+ 17093.4535  17921.756   100 a     
+   603.8070   3378.154   100  b    
+ 82265.1265 137611.908   100   c   
+  3019.3425   3080.248   100    d  
+ 24635.3625  30546.599   100     e 
+  1057.8820   3879.297   100  b    
+  3678.9095   9345.499   100    d f
+   390.4020    474.001   100  b    
+  5019.1585  10829.658   100      f
+   454.2800    545.259   100  b    
+ 81536.8845 138357.124   100   c   
+  2932.6890   3178.361   100    d  
+  3781.6350   6473.777   100    d f
+   361.0665    443.415   100  b    
+cld calculation took more than 5 seconds
+  set include_cld = FALSE to skip the cld calculation
+Unit: milliseconds
+                                                                     expr         min          lq
+   smacofSSFStressR(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE)  109.866839  112.120507
+   smacofSSFStressC(ekmanData, what = 1, verbose = FALSE, ordinal = TRUE)    2.647247    2.760653
+ smacofSSFStressR(ekmanData, rpow = 0.1, verbose = FALSE, ordinal = TRUE)  415.608349  422.409921
+ smacofSSFStressC(ekmanData, rpow = 0.1, verbose = FALSE, ordinal = TRUE)    8.546286    8.898353
+ smacofSSFStressR(ekmanData, rpow = 0.5, verbose = FALSE, ordinal = TRUE)  109.182795  111.051964
+ smacofSSFStressC(ekmanData, rpow = 0.5, verbose = FALSE, ordinal = TRUE)    2.090262    2.168798
+   smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)   56.274427   57.677672
+   smacofSSFStressC(ekmanData, rpow = 1, verbose = FALSE, ordinal = TRUE)    1.380716    1.421388
+   smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)   90.687900   93.743712
+   smacofSSFStressC(ekmanData, rpow = 2, verbose = FALSE, ordinal = TRUE)    2.126301    2.313159
+   smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE) 1141.325938 1164.490610
+   smacofSSFStressC(ekmanData, rpow = 5, verbose = FALSE, ordinal = TRUE)   22.449099   23.133594
+   smacofSSFStressR(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE)   60.915012   62.566389
+   smacofSSFStressC(ekmanData, what = 2, verbose = FALSE, ordinal = TRUE)    1.353328    1.452876
+        mean      median          uq         max neval       cld
+  113.944494  112.892598  114.237767  169.846764   100 a        
+    2.818737    2.812292    2.859791    3.030146   100  b       
+  430.655105  427.231070  430.627633  483.331124   100   c      
+    9.029747    8.994129    9.077872   12.029974   100    d     
+  112.218559  112.152773  113.212705  117.113630   100 a        
+    2.245217    2.220847    2.261560    5.096218   100  b       
+   58.316328   58.009649   58.721225   65.499263   100     e    
+    1.466115    1.454762    1.513904    1.568496   100  b       
+   96.421022   95.631946   96.770537  154.934982   100      f   
+    2.365686    2.368181    2.405019    2.825351   100  b       
+ 1178.644882 1174.524171 1183.100100 1253.676434   100       g  
+   23.513260   23.397695   23.710977   28.380774   100        h 
+   64.072004   63.156195   64.116866  118.333011   100         i
+    1.499805    1.497587    1.542830    1.678786   100  b       
+Warning message:
+In microbenchmark(smacofSSFStressR(ekmanData, what = 1, verbose = FALSE),  :
+  less accurate nanosecond times to avoid potential integer overflows

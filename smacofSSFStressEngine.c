@@ -94,12 +94,12 @@ void smacofSSFStressEngine(int* nobj, int* ndim, int* ndat, int* itel,
         *sold = *snew;
         *itel += 1;
     }
-    xfree(vinv);
     xfree(vaux);
     xfree(baux);
     xfree(daux);
     xfree(waux);
     xfree(fval);
     xfree(gval);
+    xfree(vinv);
     return;
 }

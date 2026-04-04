@@ -1,26 +1,16 @@
 
-dyn.load("smacofSSFStress.so")
-
-suppressPackageStartupMessages(library(MASS, quietly = TRUE))
-suppressPackageStartupMessages(library(isotone, quietly = TRUE))
-
-source("smacofDataUtilities.R")
-source("smacofPlots.R")
-source("smacofTorgerson.R")
-
 smacofSSFStressC <- function(theData,
-                            ndim = 2,
-                            xinit = NULL,
-                            ties = 1,
-                            itmax = 10000,
-                            usef = 1,
-                            eps = 1e-6,
-                            what = 0,
-                            rpow = 1,
-                            digits = 8,
-                            width = 10,
-                            verbose = TRUE,
-                            ordinal = FALSE) {
+                             ndim = 2,
+                             xinit = NULL,
+                             ties = 1,
+                             itmax = 10000,
+                             eps = 1e-6,
+                             what = 0,
+                             rpow = 1,
+                             digits = 8,
+                             width = 10,
+                             verbose = TRUE,
+                             ordinal = FALSE) {
   nobj <- theData$nobj
   ndat <- theData$ndat
   iind <- theData$iind
@@ -42,15 +32,14 @@ smacofSSFStressC <- function(theData,
   }
   h <- smacofSSFStressSelect(what)
   func <- h$func
-  if (usef == 1) {
-    dhat <- func(delt, rpow)
-  } else {
-    dhat <- delt
-  }
+  gunc <- h$gunc
+  dhat <- func(delt, rpow)
   if (ordinal) {
     dhat <- dhat / sqrt(sum(wght * dhat^2))
   }
-  labd <- sum(wght * dold * dhat) / sum(wght * dold ^ 2)
+  waux <- wght * gunc(delt, rpow)^2
+  waux <- waux / sum(waux)
+  labd <- sum(waux * dold * delt) / sum(waux * dold^2)
   xold <- xold * labd
   dold <- dold * labd
   sold <- sum(wght * (dhat - func(dold, rpow))^2)
@@ -102,7 +91,6 @@ smacofSSFStressC <- function(theData,
     what = what,
     rpow = rpow,
     labl = labl,
-    usef = usef,
     date = date()
   )
   return(result)
