@@ -70,6 +70,8 @@ smacofConfigurationPlot <-
            col = "RED",
            cex = 1.0) {
     xmat <- h$xmat
+    what <- h$what
+    rpow <- h$rpow
     main <- paste("Configuration Plot ",
                   h$labl,
                   ", what = ",
@@ -126,13 +128,14 @@ smacofDistDhatPlot <- function(h,
     main <- paste(main, ", numerical", sep = "")
   }
   uppe <- max(c(x, y))
+  lowe <- min(c(x, y))
   plot(
     x,
     y,
     xlab = xlab,
     ylab = ylab,
-    xlim = c(0, uppe),
-    ylim = c(0, uppe),
+    xlim = c(lowe, uppe),
+    ylim = c(lowe, uppe),
     main = main,
     cex = cex,
     pch = pch,

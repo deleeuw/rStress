@@ -38,7 +38,13 @@ papersize: letter
 graphics: true
 link-citations: true
 mainfont: Times New Roman
-abstract: TBD
+abstract: We generalize the usual least squares Multidimensional Scaling loss function
+  stress by adding a monotone weighting function $f$ that transforms both dissimilaritires 
+  and distances. This defines fStress. The algorithm to minimize fStress first linearizes
+  $f$ at the current distances and then minimizes the loss function with linearized
+  distances with the standard majorization algorithm. Code in both R and C is provided,
+  for both metric and non-metric (ordinal) scaling. Running time comparisons show the C 
+  version is 10 to 50 times faster than the R version.
 ---
 
 ```{r loadpackages, echo = FALSE}
@@ -71,23 +77,23 @@ appreciated, but is not required. The files can be found at
 
 \sectionbreak
 
-# Loss Functions
+# Introduction
 
-Metric Multidimensional Scaling (MDS) minimizes the loss function *(raw) stress*, originally proposed by @kruskal_64a, @kruskal_64b. Stress is
+Multidimensional Scaling (MDS) minimizes the loss function *stress*, originally proposed by @kruskal_64a, @kruskal_64b. In *metrix=c* MDS stress is
 \begin{equation}
-\sigma(x):=\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
+\sigma(x,\delta):=\sum_{k=1}^K w_k(\delta_k-d_k(x))^2,\label{eq-stressdef}.
 \end{equation}
-In definition \eqref{eq-stressdef} 
+with
 
 * $w$ is a vector of $K$ known positive *weights*;
 * $\delta$ is a vector of $K$ known non-negative *dissimilarities*;
 * $x:=\text{vec}(X)$, with $X$ the *configuration*, an $n\times p$ matrix of $n$ *points* in $p$ *dimensions*;
 * $d(x)$ are $K$ Euclidean *distances* between some or all pairs of points. 
 
-Thus $K\leq\frac12n(n -1)$. Our notation is slighty non-standard, because we
-use vectors in our definition, and not matrices. For each $1\leq k\leq K$ there is a pair of indices $(i(k),j(k))$ with $1\leq i(k)<j(k)\leq n$. The unit vectors
-$e_{i(k)}$ and $e_{j(k)}$ are used to define the matrix $A_k$, the direct sum of $p$ copies of $(e_{i(k)}-e_{j(k)})(e_{i(k)}-e_{j(k)})'$.
-Suppose $n=4$ and $p=2$ and $(i(k),j(k))$ is $(2,4)$. Then
+Our notation is slighty non-standard, because we
+use vectors in our definition and not matrices. For each $1\leq k\leq K$ there is a pair of indices $(i(k),j(k))$ with $1\leq i(k)<j(k)\leq n$. The unit vectors
+$e_{i(k)}$ and $e_{j(k)}$ are used to define the matrix $A_k$, which is the direct sum of $p$ copies of $(e_{i(k)}-e_{j(k)})(e_{i(k)}-e_{j(k)})'$.
+Suppose, for example, that $n=4, p=2$ and $(i(k),j(k))$ is $(2,4)$. Then
 \begin{equation}
 A_k=\begin{array}{rrrrrrrr}
 0&0&0&0&0&0&0&0\\
@@ -102,27 +108,29 @@ A_k=\begin{array}{rrrrrrrr}
 \end{equation}
 The $A_k$, together with $x=\text{vec}(X)$, allow us to conveniently write $\smash{d_k(x)=\sqrt{x'A_kx}}$.
 
-In non-metric MDS stress is a function of both $x$ and $\delta$, and we
-minimize over both arguments. We require that $\delta\in\Delta$, with $\Delta$ is subset of the non-negative orthant of $\mathbb{R}^K$. In ordinal MDS, the
+In *non-metric* MDS stress is a function of both $x$ and $\delta$, and we
+minimize over both these arguments. Thus
+$$
+\sigma(x,\delta)=\sum_{k=1}^K w_k(\delta_k-d_k(x))^2
+$$
+We require that $\delta\in\Delta$, where $\Delta$ is some subset of the non-negative orthant of $\mathbb{R}^K$. In *ordinal* MDS, the
 most common case, $\Delta$ is defined as the cone of vectors with $0\leq\delta_1\leq\cdots\leq\delta_k$,
-together with some normalization requirement to exclude the trivial solution
-with both $x$ and $\delta$ (and thus stress) equal to zero. The simplest such requirement is that $\delta$ is on the sphere $\mathbb{S}$ defined as the vectors $\delta$ for which
-\begin{equation}
-\sum_{k=1}^Kw_k^{\ }\delta_k^2=1.\label{eq-sphere}
-\end{equation}
-
+together with some normalization requirement to exclude the trivial solution in which
+ both $x$ and $\delta$ (and thus stress) are equal to zero. 
+ 
 ## Metric fStress
 
 @groenen_deleeuw_mathar_C_95 propose a generalization of stress called *fStress*. It is defined as
 \begin{equation}
 \sigma_f(x):=\sum_{k=1}^K w_k(f(\delta_k)-f(d_k(x)))^2,\label{eq-fdef1}
 \end{equation}
-with $f$ a known real-valued function defined on $(0,+\infty)$. We assume that
+with $f$ a known real-valued function defined on $(0,+\infty)$. We will only consider functions for which
 
 1. $f$ is strictly increasing on $(0,+\infty)$,
 2. $f$ is continuously differentiable on $(0,+\infty)$.
 
-Thus we do *not* require $f$ to be defined at zero. We also do *not* require, but we have a preference for functions which have, in addition,
+In our implementation we prefer functions with one or more of the following
+properties.
 
 3. $f(0)=0,$
 4. $\lim_{x\rightarrow\infty}f(x)=\infty,$
@@ -134,17 +142,17 @@ Note that (5) implies (3) and (4). Power functions $x^r$ with $r>0$ clearly
 satisfy the first five required and preferred conditions, and the sixth one
 if $r\geq 1$. We will also consider the example of the logarithm (@ramsay_77), which does not satisfy preferred conditions (3),(5) and (6). An example of an $f$ that does not satisfy (4), (5) and (6) is the arctangent, bounded by $\pi/2$ as $x\rightarrow\infty$. The logarithm, the arctangent, and the power function with $r\leq 1$ are all concave.
 
-For our purposes it is important that @groenen_deleeuw_mathar_C_95 show that at a local minimum
+@groenen_deleeuw_mathar_C_95 show that at a local minimum
 of fStress we have $d_k(x)>0$ for all $k$ for which $w_k\delta_k>0$, generalizing
 the result for stress proved by @deleeuw_A_84f. Thus, under weak conditions
-on the weights and dissimilarities, fStress is differentiable at
-local minima.
-@groenen_deleeuw_mathar_C_95 give no explicit algorithm to minimize fStress, but they do derive formulas for the first 
+on the weights and dissimilarities, fStress is differentiable at local minima.
+
+There does not seem to be an algorithm to minimize fStress for general $f$. However @groenen_deleeuw_mathar_C_95 derive formulas for the first 
 and second derivatives, which can of course be used in general-purpose optimization routines.
 
 The important special case of fStress in which $f$ is a power function is called *rStress* (also known as *powerStress*). It is
 \begin{equation}
-\sigma_r(x):=\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2\label{eq-rdef}
+\sigma_r(x):=\sum_{k=1}^K w_k(\delta_k^r-d_k^r(x))^2.\label{eq-rdef}
 \end{equation}
 If $r=1$ we have Kruskal's stress, if $r=2$ we have *sstress* used by @takane_young_deleeuw_A_77. Using
 \begin{equation}
@@ -152,34 +160,28 @@ If $r=1$ we have Kruskal's stress, if $r=2$ we have *sstress* used by @takane_yo
 \end{equation}
 shows that the logarithmic loss function used by @ramsay_77 is a limiting case of rStress. 
 
-There have been various attempts to extend the smacof majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function that implements the majorization method in @deleeuw_groenen_mair_E_16a.
+There have been various attempts to extend the smacof majorization (or MM) method for MDS (@deleeuw_C_77) to rStress. References and links to various largely unpublished reports are in @deleeuw_E_17r. The recent smacofx package (@rusch_deleeuw_mair_hornik_25) has R code for the rstressMin() function implementing the majorization method in @deleeuw_groenen_mair_E_16a.
 
 Minimizing \eqref{eq-fdef1}
-can be interpreted as approximating dissimilarities $\delta$ by distances $d(x)$ with a weighted least squares loss function, with $f$
-incorporated in the weights. This can be seen most clearly if the fit is good, i.e. when
+can be interpreted as approximating dissimilarities $\delta$ by distances $d(x)$ with a weighted least squares loss function, with $f$ acting as a form of weighting in addition to the weights in $w$. This can be seen most clearly if the fit is good, i.e. when
 $\delta$ and $d(x)$ are close. We can then approximate fStress from \eqref{eq-fdef1}
 as in
 \begin{equation}
 \sigma_f(x)\approx\sum_{k=1}^K w_k\{f'(\delta_k)\}^2(\delta_k-d_k(x))^2.
 \label{eq-fapprox}\end{equation}
-By modifying the weights in this way (@groenen_vandevelden_16) minimizing \eqref{eq-fapprox} can be done by standard metric smacof. This will presumably give a good approximation to minimizing fStress if the fit is good.
+See, for example, @groenen_vandevelden_16. Minimizing \eqref{eq-fapprox} can be done by standard metric smacof. In the case of a close fit this will presumably give a good approximation to minimizing fStress.
 
 ## Non-metric fStress
 
 In non-metric MDS we minimize fStress not only over $x$ but also
-over $\delta$, where $\delta$ is constrained to be in some subset $\Delta$
+over transformat, where $\delta$ is constrained to be in some subset $\Delta$
 of $\mathbb{R}^K$. 
-
-The most common case is ordinal MDS, where $\Delta$
-is defined by the inequalities $\delta_1\leq\cdots\leq\delta_k$.
-In the ordinal case we redefine fStress as
+To distinguish between dissimilarities and transformed dissimilarities, 
+we redefine fStress as
 \begin{equation}
 \sigma_f(x,\hat d):=\sum_{k=1}^Kw_k(\hat d_k-f(d_k(x)))^2,\label{eq-dhat}
 \end{equation}
-and we require that $\hat d\in\Delta\cap S$, where $S$ is the sphere
-\begin{equation}
-\sum_{k=1}^Kw_k\hat d_k^2=1.\label{eq-normal}
-\end{equation}
+and we require that $\hat d\in\Delta$.
 In the MDS literature the $\hat d_k$ are called the *disparities* or 
 the *pseudo-distances*. Note that it does not make a difference if
 we require the disparities $\hat d$ to be monotone with the dissimilarities
@@ -299,15 +301,27 @@ Then
 \begin{equation}
 \omega_f(x;y)=\sum_{k=1}^K\tilde w_k(y)(\tilde\delta_k(y)-d_k(x))^2.\label{eq-omegas}
 \end{equation}
-We see from \eqref{eq-tildew} that $\tilde w_k(y)$ is always non-negative. If $f$ is convex
-then $\tilde\delta_k(y)\geq\delta_k\geq 0$. If $f$ is concave then 
-$\tilde\delta_k(y)\leq\delta_k$ and $\tilde\delta_k(y)$ can be negative. If
-$f(\delta_k)=f(d_k(y))+f'(d_k(y))(\delta_k-d_k(y))+o(|\delta_k-d_k(y)|)$
-then $\tilde\delta_k(y)=\delta_k+o(|\delta_k-d_k(y)|)$. Also
+We see from \eqref{eq-tildew} that $\tilde w_k(y)$ is positive if $d_k(y)>0$. Unfortunately
+the situation for $\tilde\delta_k(y)$ is more complicated. From \eqref{eq-tilded} it follows that
+
+* if $f$ is convex then $\tilde\delta_k(y)\geq\delta_k\geq 0$, 
+* if $f$ is concave then 
+$\tilde\delta_k(y)\leq\delta_k$ and $\tilde\delta_k(y)$ can be negative,
+
+as well as
+
+* if $\delta_k>d_k(y)$ then $\tilde\delta_k(y)>d_k(y)\geq 0$,
+* if $\delta_k<d_k(y)$ then $\tilde\delta_k(y)<d_k(y)$ and $\tilde\delta_k(y)$ can be negative.
+
+If $\delta_k\approx d_k(y)$ then $\tilde\delta_k(y)\approx\delta_k$.
+In a more precise form 
 \begin{equation}
 \tilde\delta_k(y)=\left\{\frac{f'(\xi)}{f'(d_k(y))}\right\}\delta_k+\left\{1-\frac{f'(\xi)}{f'(d_k(y))}\right\}d_k(y)
 \end{equation}
-for some $\xi$ in  the interval between $\delta_k$ and $d_k(y)$. 
+for some $\xi$ in the interval between $\delta_k$ and $d_k(y)$. Or, for twice-differentiable $f$,
+\begin{equation}
+\tilde\delta_k(y)=\delta_k+\frac12\frac{f''(d_k(y))}{f'(d_k(y))}(\delta_k-d_k(y))^2+o((\delta_k-d_k(y))^2).
+\end{equation}
 
 
 For rStress equations \eqref{eq-tildew} and \eqref{eq-tilded} become
@@ -318,8 +332,7 @@ For rStress equations \eqref{eq-tildew} and \eqref{eq-tilded} become
 \end{align}
 \end{subequations}
 By convexity $\tilde\delta_k(y)$ is non-negative if $r\geq 1$. For $0<r<1$ we have 
-$\tilde\delta_k(y)>0$ if and only if $\smash{d_k(y)<(1-r)^r\delta_k}$. If $\delta_k>d_k(y)$
-then $\tilde\delta_k(y)>d_k(y)\geq 0$.
+$\tilde\delta_k(y)>0$ if and only if $\smash{d_k(y)/\delta_k<(1-r)^r}$. 
 
 By writing $\omega_f(x,y)$ as in \eqref{eq-omegas} we are on familiar majorization terrain.
 If $\delta_k(y)>0$ we use Cauchy-Schwartz, as in standard smacof,
@@ -377,52 +390,26 @@ from $y$ is equal to zero. Again, this eventuality must be monitored.
 # Software
 
 
-The R function smacofSSRStressR() and the C function smacofSSRStressC() in the files smacofSSFStressR.R and smacofSSFStressC.c handle both metric and ordinal MDS minimizing fStress, in principle for an arbitrary $f$ . The C code is compiled into a shared library smacofSSFStressC.so, which is loaded by the R front-end smacofSSFStressC.R
+The R function smacofSSRStressR() and the C function smacofSSRStressC() in the files smacofSSFStressR.R and smacofSSFStressC.c handle both metric and ordinal MDS minimizing fStress, in principle for an arbitrary $f$. If we refer to smacofSSRStressX() we mean both the R and the C function. 
 
-Both programs have input
-```{r eval = FALSE}
-function(theData,
-         ndim = 2,
-         xinit = NULL,
-         ties = 1,
-         itmax = 10000,
-         usef = 1,
-         eps = 1e-6,
-         what = 0,
-         rpow = 1,
-         digits = 8,
-         width = 10,
-         verbose = TRUE,
-         ordinal = FALSE)
-```
+The R code uses the gpava() function from @deleeuw_hornik_mair_A_09 for monotone regression, the C code uses monotone() from @busing_22. 
 
-Both functions output the same list
-```{r eval = FALSE}
-result <- list(
-    delt = delt,
-    dhat = dhat,
-    dist = dnew,
-    xmat = xnew,
-    wmat = wght,
-    loss = snew,
-    ndim = ndim,
-    init = xinit,
-    itel = itel,
-    nobj = nobj,
-    iind = iind,
-    jind = jind,
-    ordi = ordinal,
-    ties = ties,
-    what = what,
-    rpow = rpow,
-    labl = labl, 
-    usef = usef,
-    date = date()
-  )
-```
-The input parameters are copied in the output so that the result has all the
-relevant information to reconstruct the run, and can pass it, for example, to
-the plot routines.
+In C the Moore-Penrose inverse of a symmetric
+doubly-centered matrix $V$ is computed with the syminv() routine from @healy_68, using the C
+translation by John Burkardt at https://people.sc.fsu.edu/~jburkardt/c_src/c_src.html.
+In both cases we use the formula
+\begin{equation}
+V^+=(V+n^{-1}ee')^{-1}-n^{-1}ee'.
+\end{equation}
+This gives the correct result if the rank of $V$ is $n-1$, which happens if and only if
+the weights are irreducible. This means that in some (rare) cases we may run into
+a singular $V$.
+
+
+
+The C code is compiled into a shared library smacofSSFStressC.so, which is loaded by the R front-end smacofSSFStressC.R
+
+
 
 ## Data
 
@@ -502,42 +489,35 @@ C version requires recompiling of the shared library.
 
 The arguments of smacofSSFStressR() and smacofSSFStressR() are
 ```{r theargsf, echo = FALSE, eval = FALSE}
-args(fStress)
+function(theData,
+                             ndim = 2,
+                             xinit = NULL,
+                             ties = 1,
+                             itmax = 10000,
+                             eps = 1e-6,
+                             what = 0,
+                             rpow = 1,
+                             digits = 8,
+                             width = 10,
+                             verbose = TRUE,
+                             ordinal = FALSE)
 ```
 
-Thus fStress() needs an initial configuration. Parameters $f$ and $g$ are functions that compute the transformation $f$ and its derivative. The file
-fStress.R includes flog, glog, fexp, gexp, and fPower, gPower. Parameter
+Parameter
 $r$ is included in case $f$ and $g$ need additional arguments (as in the case of 
 fPower and gPower). Since all code is in R, it is easy to add additional 
-transformation functions if needed. The output of fStress() is 
-```{r outputf, eval = FALSE}
-list(
-    delt = delta, 
-    dhat = delf, 
-    wmat = wght,
-    conf = xnew,
-    dist = dnew,
-    loss = snew,
-    itel = itel
-  )
-```
-
-The arguments of smacofSSRStress() are
-```{r theargsr, echo = FALSE, eval = FALSE}
-args(smacofSSRStress)
-```
+transformation functions if needed. 
 
 
 ## Value
 
-The C code follows the conventions of the smacof versions in @deleeuw_E_25b. 
-There is only a single parameter $rpow$ for the transformation. The output
-of smacofSSRStress() is
-```{r output, eval = FALSE}
-list(
+The result of smacofSSRStressX() is
+
+```{r value, eval = FALSE}
+  result <- list(
     delt = theData$delta,
     dhat = h$dhat,
-    dist = h$edis,
+    dist = h$dnew,
     xmat = matrix(h$xnew, nobj, ndim),
     wmat = h$wght,
     loss = h$snew,
@@ -547,12 +527,17 @@ list(
     nobj = nobj,
     iind = h$iind,
     jind = h$jind,
-    weighted = weighted,
     ordi = ordinal,
-    ties = h$ties
+    ties = h$ties,
+    what = what,
+    rpow = rpow,
+    labl = labl,
+    date = date()
   )
 ```
-
+The input parameters are copied in the output so that the result has all the
+relevant information to reconstruct the run, and can pass it, for example, to
+the plot routines.
 
 
 ## Plots
@@ -633,15 +618,6 @@ As in the previous plots *type* computes residuals as
 We analyse the colour data from @ekman_54 with seven different functions $f$, using both 
 smacofSSFStressR() and using smacofSSFStressC(), both metric and ordinal.
 
-```{r rfstressruns, echo = FALSE, cache = FALSE, eval = FALSE}
-hl <- smacofSSFStressR(ekmanData, what = 1, verbose = FALSE)
-hp1 <- smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE)
-hp5 <- smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE)
-h1 <- smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE)
-h2 <- smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)
-h5 <- smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE)
-he <- smacofSSFStressR(ekmanData, what = 2, verbose = FALSE)
-```
 ```{r kableR, echo = FALSE}
 rloss <- c(0.00418, 0.00026, 0.00467, 0.01160,0.01824,0.00803,0.04511)
 riter <- c(154, 804, 227, 35,49,793,36)
@@ -803,96 +779,157 @@ Unit: milliseconds
 
 ## Plots
 
-\sectionbreak
-```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main ="", eval = FALSE}
-par(pty="s")
-smacofConfigurationPlot(chp1, labels = ekmanLabels, cex = 2)
-```
-\sectionbreak
-```{r chp1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .1", main = "", eval = FALSE}
-smacofShepardPlot(chp1, rpow = .1, cex = 2)
-```
-\sectionbreak
-```{r chp5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .5", main ="", eval = FALSE}
-par(pty="s")
-smacofConfigurationPlot(chp5, labels = ekmanLabels, cex = 2)
-```
-\sectionbreak
-```{r chp5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .5", main = "", eval = FALSE}
-smacofShepardPlot(chp5, rpow = .5, cex = 2)
-```
-\sectionbreak
-```{r ch1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 1", main ="", eval = FALSE}
-par(pty="s")
-smacofConfigurationPlot(ch1, labels = ekmanLabels, cex = 2)
-```
-\sectionbreak
-```{r ch1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 1", main = "", eval = FALSE}
-smacofShepardPlot(ch1, rpow = 1, cex = 2)
-```
-\sectionbreak
-```{r ch2c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 2", main ="", eval = FALSE}
-par(pty="s")
-smacofConfigurationPlot(ch2, labels = ekmanLabels, cex = 2)
-```
-\sectionbreak
-```{r ch2s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 2", main = "", eval = FALSE}
-smacofShepardPlot(ch2, rpow = 2, cex = 2)
-```
-\sectionbreak
-```{r ch5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 5", main ="", eval = FALSE}
-par(pty = "s")
-smacofConfigurationPlot(ch5, labels = ekmanLabels, cex = 2)
-```
-\sectionbreak
-```{r ch5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 5", main = "", eval = FALSE}
-smacofShepardPlot(ch5, rpow = 5, cex = 2)
-```
+Although we limit ourselves to a single example, the number of plots that can be made is unlimited, because we can choose $f$
+in so many ways. Moreover there are four different types of
+plots for each analysis, and each of the four types has 
+parameters that influence the plot. A true embarrasment of
+riches. 
+
+In order not to go overboard we limit ourselves to ten
+analysis, minimizing rStress for $r=.1, .5, 1, 2, 5$,
+both metric and ordinal. For each analysis we give the
+configuration plot, the Shepard plot, and the EDF
+of the residuals.
 
 \sectionbreak
-```{r chp1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .1", main ="", eval = FALSE}
+```{r chp1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .1", main =""}
 par(pty="s")
-smacofConfigurationPlot(chp1o, labels = ekmanLabels, cex = 2)
+h <- smacofSSFStressR(ekmanData, rpow = .1, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .1", main = "", eval = FALSE}
-smacofShepardPlot(chp1o, rpow = 2, cex = 2)
+```{r chp1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .1", main = ""}
+smacofShepardPlot(h, cex = 2)
 ```
 \sectionbreak
-```{r chp5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .5", main ="", eval = FALSE}
+```{r chp1r, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Metric, r = .1", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r chp5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = .5", main =""}
+h <- smacofSSFStressR(ekmanData, rpow = .5, verbose = FALSE)
 par(pty="s")
-smacofConfigurationPlot(chp5o, labels = ekmanLabels, cex = 2)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r chp5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .5", main = "", eval = FALSE}
-smacofShepardPlot(chp5o, rpow = .5, cex = 2)
+```{r chp5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = .5", main = ""}
+smacofShepardPlot(h, cex = 2)
 ```
 \sectionbreak
-```{r ch1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 1", main ="", eval = FALSE}
+```{r chp5r, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Metric, r = .5", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch1c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 1", main =""}
+par(pty="s")
+h <- smacofSSFStressR(ekmanData, rpow = 1, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch1s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 1", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r ch1r, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Metric, r = 1", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch2c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 2", main =""}
+h <- smacofSSFStressR(ekmanData, rpow = 2, verbose = FALSE)
+par(pty="s")
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch2s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 2", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r ch2r, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Metric, r = 2", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch5c, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Metric, r = 5", main =""}
 par(pty = "s")
-smacofConfigurationPlot(ch1o, labels = ekmanLabels, cex = 2)
+h <- smacofSSFStressR(ekmanData, rpow = 5, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 1", main = "", eval = FALSE}
-smacofShepardPlot(ch1o, rpow = 1, cex = 2)
+```{r ch5s, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Metric, r = 5", main = ""}
+smacofShepardPlot(h, cex = 2)
 ```
 \sectionbreak
-```{r ch2oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 2", main ="", eval = FALSE}
+```{r ch5r, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Metric, r = 5", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r chp1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .1", main =""}
+par(pty="s")
+h <- smacofSSFStressR(ekmanData, rpow = .1, ordinal = TRUE, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .1", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r chp1or, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Non-metric, r = .1", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r chp5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = .5", main =""}
+par(pty="s")
+h <- smacofSSFStressR(ekmanData, rpow = .5, ordinal = TRUE, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r chp5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = .5", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r chp5or, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Non-metric, r = .5", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch1oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 1", main =""}
 par(pty = "s")
-smacofConfigurationPlot(ch2o, labels = ekmanLabels, cex = 2)
+h <- smacofSSFStressR(ekmanData, rpow = 1, ordinal = TRUE, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch2os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 2", main = "", eval = FALSE}
-smacofShepardPlot(ch2o, rpow = 2, cex = 2)
+```{r ch1os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 1", main = ""}
+smacofShepardPlot(h, cex = 2)
 ```
 \sectionbreak
-```{r ch5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 5", main ="", eval = FALSE}
+```{r ch1or, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Non-metric, r = 1", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch2oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 2", main =""}
 par(pty = "s")
-smacofConfigurationPlot(ch5o, labels = ekmanLabels, cex = 2)
+h <- smacofSSFStressR(ekmanData, rpow = 2, ordinal = TRUE, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
 ```
 \sectionbreak
-```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = "", eval = FALSE}
-smacofShepardPlot(ch5o, rpow = 5, cex = 2)
+```{r ch2os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 2", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r ch2or, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Non-metric, r = 2", main = ""}
+smacofResidualPlot(h)
+```
+\sectionbreak
+```{r ch5oc, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Configuration Plot, Non-metric, r = 5", main =""}
+par(pty = "s")
+h <- smacofSSFStressR(ekmanData, rpow = 5, ordinal = TRUE, verbose = FALSE)
+smacofConfigurationPlot(h, labels = ekmanLabels, cex = 2)
+```
+\sectionbreak
+```{r ch5os, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Shepard Plot, Non-metric, r = 5", main = ""}
+smacofShepardPlot(h, cex = 2)
+```
+\sectionbreak
+```{r ch5or, fig.align = "center", fig.width = 10, fig.height = 10, echo = FALSE, fig.cap = "Residual EDF Plot, Non-metric, r = 5", main = ""}
+smacofResidualPlot(h)
 ```
 
 

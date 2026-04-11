@@ -35,7 +35,7 @@ void smacofSSFStressFList(double* x, double* f, double* g, int* what,
     if (What == 4) {
       for (size_t i = 0; i < Nvec; i++) {
         f[i] = atan(Rpow * x[i]);
-        g[i] = Rpow / (1.0 + SQUARE(Rpow * x[1]));
+        g[i] = Rpow / (1.0 + SQUARE(Rpow * x[i]));
       }
       return;
     }

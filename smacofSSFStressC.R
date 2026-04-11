@@ -1,3 +1,7 @@
+dyn.load("smacofSSFStress.so")
+
+source("smacofTorgerson.R")
+source("smacofSSFStressSelect.R")
 
 smacofSSFStressC <- function(theData,
                              ndim = 2,
